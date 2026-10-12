@@ -1,0 +1,73 @@
+@startgantt
+title Coursework Project Timeline
+
+Project starts the 28th of september 2026
+hide resources footbox
+
+<style>
+ganttDiagram {
+  task {
+    FontName Helvetica, Arial, sans-serif
+    FontSize 8
+    FontStyle bold
+    RoundCorner 8
+    LineThickness 1.2
+    Padding 3
+    Margin 2
+  }
+  milestone {
+    FontName Helvetica, Arial, sans-serif
+    FontSize 11
+    FontStyle bold
+    LineColor #DC2626
+  }
+  timeline {
+    FontName Helvetica, Arial, sans-serif
+    FontSize 10
+  }
+  separator {
+    FontName Helvetica, Arial, sans-serif
+    FontSize 11
+    FontStyle bold
+    BackGroundColor #F1F5F9
+  }
+}
+</style>
+
+-- Technical Deliverables --
+
+[Requirements (20 marks)\nBen: 5 | Elliot: 5\nNihan: 5 | Rachel: 5] as [req] requires 21 days
+[req] is colored in #0D9488/#047857
+
+[Architecture (22 marks)\nBen: 6 | Gabriel: 6\nPeter: 5 | Elliot: 5] as [arc] requires 7 days
+[req] -> [arc]
+[arc] is colored in #0284C7/#0369A1
+
+[Implementation (25 marks)\nJames: 8 | Peter: 6\nRachel: 6 | Others: 5] as [impl] requires 14 days
+[arc] -> [impl]
+[impl] is colored in #4F46E5/#3730A3
+
+[Website (3 marks)\nJames: 3] as [web] requires 42 days
+[web] is colored in #D97706/#B45309
+
+-- Project Management --
+
+[Project Plan (10 marks)\nRuth: 5 | Gabriel: 5] as [pla] requires 42 days
+[pla] is colored in #7C3AED/#5B21B6
+
+[Risk Assessment (10 marks)\nRuth: 5 | Nihan: 5] as [ris] requires 21 days
+[ris] is colored in #DB2777/#9D174D
+
+-- Phases & Deadlines --
+
+2026-11-02 to 2026-11-08 are named [Consolidation Week]
+2026-11-02 to 2026-11-08 are colored in #FEF3C7
+
+[Soft Deadline] happens 2026-11-09
+[Soft Deadline] is colored in #F59E0B
+
+
+[Hard Deadline] happens 2026-11-16
+[Hard Deadline] is colored in #DC2626
+
+@endgantt
