@@ -1,4 +1,4 @@
-package com.ENG1C4T3.goose_survivor;
+package com.eng1c4t3.goosesurvivor;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

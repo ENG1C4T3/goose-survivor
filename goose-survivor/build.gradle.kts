@@ -25,7 +25,7 @@ checkstyle {
 }
 
 application {
-    mainClass = "com.ENG1C4T3.goose_survivor.GooseSurvivor"
+    mainClass = "com.eng1c4t3.goosesurvivor.GooseSurvivor"
 
     // mac setup
     if (System.getProperty("os.name").lowercase().contains("mac")) {
