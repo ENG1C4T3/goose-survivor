@@ -45,6 +45,11 @@ dependencies {
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion")
     runtimeOnly("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
+
+    // jakarta validation
+    implementation("jakarta.validation:jakarta.validation-api:3.0.2")
+    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
+    implementation("org.glassfish:jakarta.el:4.0.2")
 }
 
 tasks.named<Test>("test") {

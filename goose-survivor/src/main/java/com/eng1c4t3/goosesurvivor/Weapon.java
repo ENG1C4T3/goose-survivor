@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import java.util.List;
 
 public abstract class Weapon {
+  /*
   private final float baseDamage;
   private final float baseRange;
   private final float baseAttackInterval;
@@ -71,9 +72,6 @@ public abstract class Weapon {
   public final void update(float delta, Player owner, List<Enemy> enemyList) {
 
     updateEffects(delta);
-    if (owner.isDead()) {
-      return;
-    }
 
     cooldownRemaining = Math.max(0f, cooldownRemaining - delta);
     if (cooldownRemaining > 0f) {
@@ -90,7 +88,7 @@ public abstract class Weapon {
   public void render(ShapeRenderer renderer) {
 
   }
-
+*/
 }
 
     

@@ -7,6 +7,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.eng1c4t3.goosesurvivor.util.ValidatorUtil;
 import java.util.ArrayList;
 
 public class GooseSurvivor extends ApplicationAdapter {
@@ -28,7 +29,7 @@ public class GooseSurvivor extends ApplicationAdapter {
   @Override
   public void create() {
     shapeRenderer = new ShapeRenderer();
-    player = new Player(100, 100, 200, 70, 50, 100, 100, 15, 15);
+    player = new Player(100, 100, 10, 70, 50, 100);
     enemyList = new ArrayList<>();
 
     for (int i = 0; i < 5; i++) {
@@ -41,12 +42,9 @@ public class GooseSurvivor extends ApplicationAdapter {
   @Override
   public void render() {
     float delta = Gdx.graphics.getDeltaTime();
-    if (!player.isDead()) {
-      update(delta);
-      // weapon.update(delta, player, enemyList);
-      removeDeadEnemies();
-      checkCollisions();
-    }
+    update(delta);
+    removeDeadEnemies();
+    checkCollisions();
     draw();
   }
 
@@ -96,5 +94,6 @@ public class GooseSurvivor extends ApplicationAdapter {
   @Override
   public void dispose() {
     shapeRenderer.dispose();
+    ValidatorUtil.close();
   }
 }

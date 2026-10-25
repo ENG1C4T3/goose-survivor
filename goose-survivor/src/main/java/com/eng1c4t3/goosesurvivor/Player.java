@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.eng1c4t3.goosesurvivor.util.ValidatorUtil;
+import jakarta.validation.constraints.Positive;
 
 public class Player {
   private Vector2 position;
@@ -12,43 +14,34 @@ public class Player {
   private Vector2 velocity;
   private Rectangle hitbox;
 
-  private float width;
-  private float height;
-
+  @Positive(message = "Speed should be positive")
   private float speed;
+  @Positive(message = "Width should be positive")
+  private final float width;
+  @Positive(message = "Height should be positive")
+  private final float height;
   private float health;
-  private float block;
+  @Positive(message = "maxHealth should be positive")
   private float maxHealth;
-  private float maxBlock;
 
   private final Vector2 facing = new Vector2(1f, 0f);
 
   private static final float HURT_COOLDOWN = 1f;
   private float hurtCooldownRemaining = 0f;
 
-  public Player(
-      float x, float y, float speed, float width, float height,
-      float maxHealth, float health, float maxBlock, float block
-  ) {
+  public Player(float x, float y, float speed, float width, float height, float maxHealth) {
     position = new Vector2(x, y);
     direction = new Vector2();
     velocity = new Vector2();
     hitbox = new Rectangle(x, y, width, height);
-    this.height = height;
+
     this.width = width;
-
+    this.height = height;
     this.maxHealth = maxHealth;
-    if (health <= 0) {
-      throw new IllegalArgumentException("Initial health should be positive");
-    } else {
-      this.health = health;
-    }
-
-    this.maxBlock = maxBlock;
-    this.block = block;
-
+    this.health = maxHealth;
     this.speed = speed;
 
+    ValidatorUtil.validate(this);
   }
 
 
@@ -81,7 +74,7 @@ public class Player {
   }
 
   public void render(ShapeRenderer shapeRenderer) {
-    shapeRenderer.rect(position.x, position.y, width, height);
+    shapeRenderer.rect(position.x, position.y, hitbox.width, hitbox.height);
   }
 
   public Vector2 getPosition() {
@@ -96,38 +89,18 @@ public class Player {
     return hitbox;
   }
 
-  //===health & buff system===
-
-  public void gainBlock(float amount) {
-    if (amount < 0) {
-      throw new IllegalArgumentException("Block gain should not be negative");
-    }
-    block = Math.min(maxBlock, block + amount);
-  }
-
   public void takeDamage(float amount) {
-    if (amount < 0) {
-      throw new IllegalArgumentException("Damage should not be negative");
+    if (amount <= 0f) {
+      throw new IllegalArgumentException("Damage amount should be positive");
     }
-    if (amount == 0f || isDead() || hurtCooldownRemaining > 0f) {
+    if (hurtCooldownRemaining > 0f || health <= 0) {
       return;
     }
-
-    float absorbed = Math.min(block, amount);
-    block -= absorbed;
-
-    float remainingDamage = amount - absorbed;
-    health = Math.max(0f, health - remainingDamage);
-
+    health = Math.max(0f, health - amount);
     hurtCooldownRemaining = HURT_COOLDOWN;
 
-    System.out.println("Health: " + health + ", Block: " + block);
-    if (isDead()) {
+    if (health <= 0) {
       System.out.println("===Game Over===");
     }
-  }
-
-  public boolean isDead() {
-    return health <= 0f;
   }
 }
