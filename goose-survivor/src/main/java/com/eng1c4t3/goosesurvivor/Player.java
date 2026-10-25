@@ -8,6 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.eng1c4t3.goosesurvivor.util.ValidatorUtil;
 import jakarta.validation.constraints.Positive;
 
+/*
+ * This class represents the player in the game.
+ */
 public class Player {
   private Vector2 position;
   private Vector2 direction;
