@@ -1,0 +1,39 @@
+@startuml
+
+package "Components (Pure Data)" {
+    class InteractableComponent {
+        + float range
+        + String promptText
+    }
+    
+    class TriggerEventComponent {
+        + Entity sourcePlayer
+        + Entity targetInteractable
+        + ActionType action
+    }
+}
+
+package "Systems (Pure Logic)" {
+    class InputSystem {
+        ' Checks keybinds and player position
+        + void update(float deltaTime)
+    }
+
+    class InteractionSystem {
+        ' Processes the event logic
+        + void update(float deltaTime)
+    }
+    
+    class EventCleanupSystem {
+        ' Runs at the very end of the frame
+        + void update(float deltaTime)
+    }
+}
+
+' Flow of the Event-as-Entity pattern
+InputSystem .right.> TriggerEventComponent : 1. Detects keypress in range\nCreates Event Entity
+InteractionSystem ..> TriggerEventComponent : 2. Reads Event Entity\nExecutes game logic
+EventCleanupSystem ..> TriggerEventComponent : 3. Destroys Event Entity\nat end of frame
+
+InteractionSystem ..> InteractableComponent : reads
+@enduml

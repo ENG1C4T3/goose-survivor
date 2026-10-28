@@ -1,0 +1,140 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "Core" {
+    class Entity {
+        - long id
+        - Array<Component> components
+        + void add(Component c)
+        + Component get(Class componentClass)
+    }
+}
+
+package "Components (Pure Data)" {
+    interface Component {}
+    
+    class TransformComponent {
+        + Vector2 position
+    }
+    Component <|.. TransformComponent
+
+    class TextureComponent {
+        + TextureRegion region
+    }
+    Component <|.. TextureComponent
+
+    class VelocityComponent {
+        + Vector2 direction
+        + float maxSpeed
+    }
+    Component <|.. VelocityComponent
+
+    class BoundsComponent {
+        + Rectangle bounds
+    }
+    Component <|.. BoundsComponent
+
+    class HealthComponent {
+        + float health
+        + float maxHealth
+        + float damageCooldown
+    }
+    Component <|.. HealthComponent
+
+    class PlayerComponent {
+        ' Tag component (can be empty)
+    }
+    Component <|.. PlayerComponent
+
+    class EnemyComponent {
+        + EnemyType type
+        + float damage
+    }
+    Component <|.. EnemyComponent
+    
+    enum EnemyType {
+        NORMAL_GOOSE
+        FAST_GOOSE
+        TANK_GOOSE
+        GRADIENT_GOOSE
+        LONG_BOI
+    }
+    EnemyComponent -> EnemyType
+
+    class ProjectileComponent {
+        + float baseDamage
+    }
+    Component <|.. ProjectileComponent
+
+    class InteractableComponent {
+        + float range
+    }
+    Component <|.. InteractableComponent
+
+    class TriggerComponent {
+        + List<TriggerListener> listeners
+    }
+    Component <|.. TriggerComponent
+}
+
+package "Systems (Pure Logic)" {
+    abstract class EntitySystem {
+        + void update(float deltaTime)
+    }
+
+    class RenderSystem {
+        ' Requires: TransformComponent, TextureComponent
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- RenderSystem
+
+    class MovementSystem {
+        ' Requires: TransformComponent, VelocityComponent
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- MovementSystem
+
+    class CollisionSystem {
+        ' Requires: TransformComponent, BoundsComponent
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- CollisionSystem
+
+    class CombatSystem {
+        ' Requires: HealthComponent
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- CombatSystem
+
+    class EnemyAiSystem {
+        ' Requires: EnemyComponent, TransformComponent, VelocityComponent
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- EnemyAiSystem
+
+    class InteractionSystem {
+        ' Requires: InteractableComponent or TriggerComponent
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- InteractionSystem
+}
+
+' Show dependencies to clarify how Systems use Components
+RenderSystem ..> TransformComponent : reads
+RenderSystem ..> TextureComponent : reads
+
+MovementSystem ..> TransformComponent : writes
+MovementSystem ..> VelocityComponent : reads
+
+CollisionSystem ..> BoundsComponent : reads
+CollisionSystem ..> TransformComponent : reads
+
+CombatSystem ..> HealthComponent : writes
+
+EnemyAiSystem ..> EnemyComponent : reads
+EnemyAiSystem ..> VelocityComponent : writes
+
+InteractionSystem ..> InteractableComponent : reads
+InteractionSystem ..> TriggerComponent : reads
+
+@enduml
