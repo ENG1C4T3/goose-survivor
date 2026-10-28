@@ -36,7 +36,7 @@ public class GooseSurvivor extends ApplicationAdapter {
   private TextureManager textureManager;
 
   /**
-   * Initializes the game.
+   * Initialises the game.
    */
   @Override
   public void create() {
@@ -70,7 +70,6 @@ public class GooseSurvivor extends ApplicationAdapter {
   public void render() {
     Gdx.gl.glClearColor(0, 0, 0, 1);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
     engine.update(Gdx.graphics.getDeltaTime());
   }
 
