@@ -6,6 +6,8 @@ import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 /**
  * Represents the position of an entity in the game.
  *
+ * <p> The position of an entity in the game, represented by a {@link Vector2}.
+ *
  * @see MovementSystem
  */
 public class TransformComponent implements Component {
