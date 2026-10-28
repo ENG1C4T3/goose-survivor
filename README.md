@@ -13,10 +13,16 @@
   <img src="misc/timelines/14_10_26_timeline.svg" width="100%">
 </details>
 
-<details open>
+<details>
   <summary><b>21-10-2026</b></summary>
   <br>
   <img src="misc/timelines/21_10_26_timeline.svg" width="100%">
+</details>
+
+<details open>
+  <summary><b>28-10-2026</b></summary>
+  <br>
+  <img src="misc/timelines/28_10_26_timeline.svg" width="100%">
 </details>
 
 ---

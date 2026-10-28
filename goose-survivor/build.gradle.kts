@@ -17,6 +17,12 @@ java {
     }
 }
 
+sourceSets {
+    main {
+        resources.srcDir("assets")
+    }
+}
+
 checkstyle {
     toolVersion = "10.26.1"
     configFile = file("${rootDir}/config/checkstyle/google_checks.xml")
@@ -26,14 +32,24 @@ checkstyle {
 
 application {
     mainClass = "com.eng1c4t3.goosesurvivor.GooseSurvivor"
-
-    // mac setup
-    if (System.getProperty("os.name").lowercase().contains("mac")) {
-        applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
+    applicationDefaultJvmArgs = buildList {
+        add("--enable-native-access=ALL-UNNAMED")
+        if (System.getProperty("os.name").lowercase().contains("mac")) {
+            add("-XstartOnFirstThread")
+        }
     }
 }
 
 val gdxVersion = "1.14.2"
+val lwjglVersion = "3.3.6"
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.lwjgl") {
+            useVersion(lwjglVersion)
+        }
+    }
+}
 
 dependencies {
     // JUnit
@@ -54,6 +70,7 @@ dependencies {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
 
 tasks.withType<Checkstyle>().configureEach {

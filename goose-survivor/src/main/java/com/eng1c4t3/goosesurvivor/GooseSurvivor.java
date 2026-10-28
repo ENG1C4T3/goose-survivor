@@ -2,21 +2,32 @@ package com.eng1c4t3.goosesurvivor;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.eng1c4t3.goosesurvivor.util.ValidatorUtil;
-import java.util.ArrayList;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
+import com.eng1c4t3.goosesurvivor.components.TextureComponent;
+import com.eng1c4t3.goosesurvivor.components.TransformComponent;
+import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.systems.InputSystem;
+import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
+import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
 
+/**
+ * Represents the main game class.
+ */
 public class GooseSurvivor extends ApplicationAdapter {
-  private ShapeRenderer shapeRenderer;
-  private Player player;
-  private ArrayList<Enemy> enemyList;
-  private Weapon weapon;
-  private NutProjectile testNut;
 
+  /**
+   * The entry point of the application. Configures and starts the game.
+   *
+   * @param args The command-line arguments passed to the application.
+   */
   public static void main(String[] args) {
     Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
     config.setTitle("Goose Survivor");
@@ -26,74 +37,74 @@ public class GooseSurvivor extends ApplicationAdapter {
     new Lwjgl3Application(new GooseSurvivor(), config);
   }
 
+  private Engine engine;
+  private SpriteBatch batch;
+  private OrthographicCamera camera;
+
+  private AssetManager assetManager;
+
+  /**
+   * Initializes the game.
+   */
   @Override
   public void create() {
-    shapeRenderer = new ShapeRenderer();
-    player = new Player(100, 100, 10, 70, 50, 100);
-    enemyList = new ArrayList<>();
+    engine = new Engine();
+    batch = new SpriteBatch();
+    camera = new OrthographicCamera();
+    camera.setToOrtho(false, 800, 480);
 
-    for (int i = 0; i < 5; i++) {
-      enemyList.add(new Enemy(600, 400 - (80 * i), 100, 70, 50, 30f));
-    }
+    assetManager = new AssetManager();
+    assetManager.load("libgdx.png", Texture.class);
 
-    testNut = new NutProjectile(0f, 0f, new Vector2(1f, 2f), 200f, 6f);
+    // Forces the manager to finish loading everything before the game starts
+    assetManager.finishLoading();
+
+    Texture playerTexture = assetManager.get("libgdx.png", Texture.class);
+    TextureRegion playerRegion = new TextureRegion(playerTexture);
+    registerSystems();
+    createPlayer(playerRegion);
   }
 
+  /**
+   * Registers the game systems.
+   */
+  private void registerSystems() {
+    engine.addSystem(new InputSystem());
+    engine.addSystem(new MovementSystem());
+    engine.addSystem(new RenderSystem(batch, camera));
+  }
+
+  /**
+   * Creates the player entity.
+   *
+   * @param region The texture region for the player.
+   */
+  private void createPlayer(TextureRegion region) {
+    Entity player = new Entity();
+    player.addComponent(new PlayerComponent());
+    player.addComponent(new TransformComponent(10, 10));
+    player.addComponent(new VelocityComponent(200f));
+    player.addComponent(new TextureComponent(region));
+    engine.addEntity(player);
+  }
+
+  /**
+   * Updates the game state.
+   */
   @Override
   public void render() {
-    float delta = Gdx.graphics.getDeltaTime();
-    update(delta);
-    removeDeadEnemies();
-    checkCollisions();
-    draw();
-  }
-
-  private void update(float delta) {
-    player.update(delta);
-
-    for (Enemy enemy : enemyList) {
-      enemy.update(delta, player.getPosition());
-    }
-
-    testNut.update(delta);
-  }
-
-  private void checkCollisions() {
-    for (Enemy enemy : enemyList) {
-      if (enemy.getHitbox().overlaps(player.getHitbox())) {
-        player.takeDamage(10f);
-      }
-    }
-  }
-
-  private void draw() {
     Gdx.gl.glClearColor(0, 0, 0, 1);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-    shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-    player.render(shapeRenderer);
-
-    for (Enemy enemy : enemyList) {
-      enemy.render(shapeRenderer);
-    }
-
-    testNut.render(shapeRenderer);
-
-    shapeRenderer.end();
+    engine.update(Gdx.graphics.getDeltaTime());
   }
 
-  private void removeDeadEnemies() {
-    for (int i = enemyList.size() - 1; i >= 0; i--) {
-      if (enemyList.get(i).isDead()) {
-        enemyList.remove(i);
-      }
-    }
-  }
-
+  /**
+   * Disposes of the game resources.
+   */
   @Override
   public void dispose() {
-    shapeRenderer.dispose();
-    ValidatorUtil.close();
+    batch.dispose();
+    assetManager.dispose();
   }
 }
