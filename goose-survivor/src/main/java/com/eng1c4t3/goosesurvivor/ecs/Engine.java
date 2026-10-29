@@ -1,6 +1,5 @@
-package com.eng1c4t3.goosesurvivor;
+package com.eng1c4t3.goosesurvivor.ecs;
 
-import com.eng1c4t3.goosesurvivor.systems.EntitySystem;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.eng1c4t3.goosesurvivor.components;
+package com.eng1c4t3.goosesurvivor.ecs;
 
 /**
  * Marker interface for all components.

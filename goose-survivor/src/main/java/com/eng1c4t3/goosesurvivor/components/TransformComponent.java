@@ -1,6 +1,7 @@
 package com.eng1c4t3.goosesurvivor.components;
 
 import com.badlogic.gdx.math.Vector2;
+import com.eng1c4t3.goosesurvivor.ecs.Component;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 
 /**

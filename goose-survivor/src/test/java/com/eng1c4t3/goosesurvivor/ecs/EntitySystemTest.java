@@ -1,9 +1,8 @@
-package com.eng1c4t3.goosesurvivor.systems;
+package com.eng1c4t3.goosesurvivor.ecs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.eng1c4t3.goosesurvivor.Engine;
 import org.junit.jupiter.api.Test;
 
 class EntitySystemTest {

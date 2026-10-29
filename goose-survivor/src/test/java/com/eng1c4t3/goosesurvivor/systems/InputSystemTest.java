@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.eng1c4t3.goosesurvivor.Engine;
-import com.eng1c4t3.goosesurvivor.Entity;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Engine;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Set;

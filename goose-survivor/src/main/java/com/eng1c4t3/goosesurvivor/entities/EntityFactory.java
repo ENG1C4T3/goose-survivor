@@ -1,10 +1,11 @@
-package com.eng1c4t3.goosesurvivor;
+package com.eng1c4t3.goosesurvivor.entities;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
 
 /**
  * Factory for creating game entities with configured components.

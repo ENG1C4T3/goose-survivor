@@ -1,4 +1,4 @@
-package com.eng1c4t3.goosesurvivor;
+package com.eng1c4t3.goosesurvivor.entities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -8,6 +8,7 @@ import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
 import org.junit.jupiter.api.Test;
 
 class EntityFactoryTest {

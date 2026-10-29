@@ -1,8 +1,9 @@
 package com.eng1c4t3.goosesurvivor.systems;
 
-import com.eng1c4t3.goosesurvivor.Entity;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
+import com.eng1c4t3.goosesurvivor.ecs.EntitySystem;
 
 /**
  * Handles the movement of entities based on their velocity.

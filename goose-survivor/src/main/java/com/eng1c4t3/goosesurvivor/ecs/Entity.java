@@ -1,6 +1,5 @@
-package com.eng1c4t3.goosesurvivor;
+package com.eng1c4t3.goosesurvivor.ecs;
 
-import com.eng1c4t3.goosesurvivor.components.Component;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

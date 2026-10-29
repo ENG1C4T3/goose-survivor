@@ -2,9 +2,10 @@ package com.eng1c4t3.goosesurvivor.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.eng1c4t3.goosesurvivor.Entity;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
+import com.eng1c4t3.goosesurvivor.ecs.EntitySystem;
 
 /**
  * Handles player input and updates the velocity component accordingly.
@@ -29,19 +30,19 @@ public class InputSystem extends EntitySystem {
 
         vel.velocity.setZero();
         if (Gdx.input.isKeyPressed(Input.Keys.W)
-            | Gdx.input.isKeyPressed(Input.Keys.UP)) {
+            || Gdx.input.isKeyPressed(Input.Keys.UP)) {
           vel.velocity.y += 1;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)
-            | Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+            || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
           vel.velocity.y -= 1;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)
-            | Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
           vel.velocity.x -= 1;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)
-            | Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
           vel.velocity.x += 1;
         }
 

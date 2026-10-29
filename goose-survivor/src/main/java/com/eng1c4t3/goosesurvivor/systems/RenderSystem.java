@@ -2,9 +2,10 @@ package com.eng1c4t3.goosesurvivor.systems;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.eng1c4t3.goosesurvivor.Entity;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
+import com.eng1c4t3.goosesurvivor.ecs.EntitySystem;
 
 /**
  * Renders entities with textures and positions.

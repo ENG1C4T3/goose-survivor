@@ -2,10 +2,10 @@ package com.eng1c4t3.goosesurvivor.systems;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.eng1c4t3.goosesurvivor.Engine;
-import com.eng1c4t3.goosesurvivor.Entity;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.ecs.Engine;
+import com.eng1c4t3.goosesurvivor.ecs.Entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

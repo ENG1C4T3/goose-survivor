@@ -1,7 +1,4 @@
-package com.eng1c4t3.goosesurvivor.systems;
-
-import com.eng1c4t3.goosesurvivor.Engine;
-import com.eng1c4t3.goosesurvivor.Entity;
+package com.eng1c4t3.goosesurvivor.ecs;
 
 /**
  * The EntitySystem class represents a system that operates on {@link Entity} in the game.
