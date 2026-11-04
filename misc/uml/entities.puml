@@ -1,33 +1,67 @@
 @startuml
 skinparam classAttributeIconSize 0
 
-package "Core" {
-    class Entity {
-        - long id
-        - Array<Component> components
-        + void add(Component c)
-        + Component get(Class componentClass)
+package "Ashley ECS Framework" {
+    interface Component <<com.badlogic.ashley.core>>
+    class Entity <<com.badlogic.ashley.core>> {
+        + Entity add(Component component)
+        + Component remove(Class<Component> componentClass)
+        + T getComponent(Class<T> componentClass)
+        + boolean hasComponent(Class<Component> componentClass)
     }
+    class Engine <<com.badlogic.ashley.core>> {
+        + void addEntity(Entity entity)
+        + void removeEntity(Entity entity)
+        + void addSystem(EntitySystem system)
+        + void update(float deltaTime)
+    }
+    abstract class EntitySystem <<com.badlogic.ashley.core>> {
+        + void update(float deltaTime)
+    }
+    abstract class IteratingSystem <<com.badlogic.ashley.systems>> {
+        # void processEntity(Entity entity, float deltaTime)
+        + void update(float deltaTime)
+    }
+    class ComponentMapper<T extends Component> <<com.badlogic.ashley.core>> {
+        + {static} ComponentMapper<T> getFor(Class<T> componentClass)
+        + T get(Entity entity)
+        + boolean has(Entity entity)
+    }
+    class Family <<com.badlogic.ashley.core>> {
+        + {static} Builder all(Class<? extends Component>... componentTypes)
+    }
+
+    EntitySystem <|-- IteratingSystem
+    Entity o-- Component
+    Engine o-- Entity
+    Engine o-- EntitySystem
 }
 
 package "Components (Pure Data)" {
-    interface Component {}
-    
     class TransformComponent {
+        + {static} ComponentMapper<TransformComponent> MAPPER
         + Vector2 position
     }
     Component <|.. TransformComponent
 
     class TextureComponent {
+        + {static} ComponentMapper<TextureComponent> MAPPER
         + TextureRegion region
     }
     Component <|.. TextureComponent
 
     class VelocityComponent {
-        + Vector2 direction
+        + {static} ComponentMapper<VelocityComponent> MAPPER
+        + Vector2 velocity
         + float maxSpeed
     }
     Component <|.. VelocityComponent
+
+    class PlayerComponent {
+        + {static} ComponentMapper<PlayerComponent> MAPPER
+        ' Tag component
+    }
+    Component <|.. PlayerComponent
 
     class BoundsComponent {
         + Rectangle bounds
@@ -41,17 +75,12 @@ package "Components (Pure Data)" {
     }
     Component <|.. HealthComponent
 
-    class PlayerComponent {
-        ' Tag component (can be empty)
-    }
-    Component <|.. PlayerComponent
-
     class EnemyComponent {
         + EnemyType type
         + float damage
     }
     Component <|.. EnemyComponent
-    
+
     enum EnemyType {
         NORMAL_GOOSE
         FAST_GOOSE
@@ -59,7 +88,7 @@ package "Components (Pure Data)" {
         GRADIENT_GOOSE
         LONG_BOI
     }
-    EnemyComponent -> EnemyType
+    EnemyComponent --> EnemyType
 
     class ProjectileComponent {
         + float baseDamage
@@ -78,53 +107,72 @@ package "Components (Pure Data)" {
 }
 
 package "Systems (Pure Logic)" {
-    abstract class EntitySystem {
-        + void update(float deltaTime)
-    }
-
     class RenderSystem {
-        ' Requires: TransformComponent, TextureComponent
+        - SpriteBatch batch
+        - OrthographicCamera camera
+        ' Family: all(TransformComponent, TextureComponent)
         + void update(float deltaTime)
+        # void processEntity(Entity entity, float deltaTime)
     }
-    EntitySystem <|-- RenderSystem
+    IteratingSystem <|-- RenderSystem
 
     class MovementSystem {
-        ' Requires: TransformComponent, VelocityComponent
-        + void update(float deltaTime)
+        ' Family: all(TransformComponent, VelocityComponent)
+        # void processEntity(Entity entity, float deltaTime)
     }
-    EntitySystem <|-- MovementSystem
+    IteratingSystem <|-- MovementSystem
+
+    class InputSystem {
+        ' Family: all(PlayerComponent, VelocityComponent)
+        # void processEntity(Entity entity, float deltaTime)
+    }
+    IteratingSystem <|-- InputSystem
 
     class CollisionSystem {
-        ' Requires: TransformComponent, BoundsComponent
-        + void update(float deltaTime)
+        ' Family: all(TransformComponent, BoundsComponent)
+        # void processEntity(Entity entity, float deltaTime)
     }
-    EntitySystem <|-- CollisionSystem
+    IteratingSystem <|-- CollisionSystem
 
     class CombatSystem {
-        ' Requires: HealthComponent
-        + void update(float deltaTime)
+        ' Family: all(HealthComponent)
+        # void processEntity(Entity entity, float deltaTime)
     }
-    EntitySystem <|-- CombatSystem
+    IteratingSystem <|-- CombatSystem
 
     class EnemyAiSystem {
-        ' Requires: EnemyComponent, TransformComponent, VelocityComponent
-        + void update(float deltaTime)
+        ' Family: all(EnemyComponent, TransformComponent, VelocityComponent)
+        # void processEntity(Entity entity, float deltaTime)
     }
-    EntitySystem <|-- EnemyAiSystem
+    IteratingSystem <|-- EnemyAiSystem
 
     class InteractionSystem {
-        ' Requires: InteractableComponent or TriggerComponent
-        + void update(float deltaTime)
+        ' Family: all(InteractableComponent) or all(TriggerComponent)
+        # void processEntity(Entity entity, float deltaTime)
     }
-    EntitySystem <|-- InteractionSystem
+    IteratingSystem <|-- InteractionSystem
 }
 
-' Show dependencies to clarify how Systems use Components
-RenderSystem ..> TransformComponent : reads
-RenderSystem ..> TextureComponent : reads
+package "Entities" {
+    class EntityFactory {
+        + {static} Entity createPlayer(float x, float y, float speed, TextureRegion region)
+    }
+    EntityFactory ..> Entity : creates
+    EntityFactory ..> PlayerComponent : attaches
+    EntityFactory ..> TransformComponent : attaches
+    EntityFactory ..> VelocityComponent : attaches
+    EntityFactory ..> TextureComponent : attaches
+}
 
-MovementSystem ..> TransformComponent : writes
-MovementSystem ..> VelocityComponent : reads
+' System to Component dependencies
+RenderSystem ..> TransformComponent : reads via MAPPER
+RenderSystem ..> TextureComponent : reads via MAPPER
+
+MovementSystem ..> TransformComponent : writes via MAPPER
+MovementSystem ..> VelocityComponent : reads via MAPPER
+
+InputSystem ..> PlayerComponent : matches via Family
+InputSystem ..> VelocityComponent : writes via MAPPER
 
 CollisionSystem ..> BoundsComponent : reads
 CollisionSystem ..> TransformComponent : reads

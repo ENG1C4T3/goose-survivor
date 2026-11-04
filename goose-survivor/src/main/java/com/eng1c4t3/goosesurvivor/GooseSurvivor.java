@@ -1,5 +1,6 @@
 package com.eng1c4t3.goosesurvivor;
 
+import com.badlogic.ashley.core.Engine;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
@@ -7,7 +8,6 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.eng1c4t3.goosesurvivor.ecs.Engine;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;

@@ -1,8 +1,9 @@
 package com.eng1c4t3.goosesurvivor.components;
 
+import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.TextureManager;
-import com.eng1c4t3.goosesurvivor.ecs.Component;
 import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
 
 /**
@@ -13,6 +14,9 @@ import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
  * @see RenderSystem
  */
 public class TextureComponent implements Component {
+  public static final ComponentMapper<TextureComponent> MAPPER =
+      ComponentMapper.getFor(TextureComponent.class);
+
   public TextureRegion region;
 
   /**

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.eng1c4t3.goosesurvivor.ecs.Component;
+import com.badlogic.ashley.core.Component;
 import org.junit.jupiter.api.Test;
 
 class VelocityComponentTest {

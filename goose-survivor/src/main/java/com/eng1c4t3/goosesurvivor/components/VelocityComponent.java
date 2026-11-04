@@ -1,7 +1,8 @@
 package com.eng1c4t3.goosesurvivor.components;
 
+import com.badlogic.ashley.core.Component;
+import com.badlogic.ashley.core.ComponentMapper;
 import com.badlogic.gdx.math.Vector2;
-import com.eng1c4t3.goosesurvivor.ecs.Component;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 
 /**
@@ -15,6 +16,9 @@ import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
  * @see MovementSystem
  */
 public class VelocityComponent implements Component {
+  public static final ComponentMapper<VelocityComponent> MAPPER =
+      ComponentMapper.getFor(VelocityComponent.class);
+
   public final Vector2 velocity;
   public float maxSpeed;
 

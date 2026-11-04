@@ -2,10 +2,10 @@ package com.eng1c4t3.goosesurvivor.systems;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
-import com.eng1c4t3.goosesurvivor.ecs.Engine;
-import com.eng1c4t3.goosesurvivor.ecs.Entity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +28,8 @@ class MovementSystemTest {
     VelocityComponent velocity = new VelocityComponent(100f);
     velocity.velocity.set(50f, -30f);
 
-    entity.addComponent(transform);
-    entity.addComponent(velocity);
+    entity.add(transform);
+    entity.add(velocity);
     engine.addEntity(entity);
 
     movementSystem.update(0.5f);
@@ -45,8 +45,8 @@ class MovementSystemTest {
     VelocityComponent velocity = new VelocityComponent(100f);
     velocity.velocity.set(0f, 0f);
 
-    entity.addComponent(transform);
-    entity.addComponent(velocity);
+    entity.add(transform);
+    entity.add(velocity);
     engine.addEntity(entity);
 
     movementSystem.update(1.0f);
@@ -59,7 +59,7 @@ class MovementSystemTest {
   void testEntityWithoutVelocityComponentNotModified() {
     Entity entity = new Entity();
     TransformComponent transform = new TransformComponent(50f, 60f);
-    entity.addComponent(transform);
+    entity.add(transform);
     engine.addEntity(entity);
 
     movementSystem.update(1.0f);
@@ -73,7 +73,7 @@ class MovementSystemTest {
     Entity entity = new Entity();
     VelocityComponent velocity = new VelocityComponent(100f);
     velocity.velocity.set(20f, 30f);
-    entity.addComponent(velocity);
+    entity.add(velocity);
     engine.addEntity(entity);
 
     movementSystem.update(1.0f);
@@ -88,19 +88,19 @@ class MovementSystemTest {
     TransformComponent transform1 = new TransformComponent(0f, 0f);
     VelocityComponent velocity1 = new VelocityComponent(100f);
     velocity1.velocity.set(10f, 20f);
-    entity1.addComponent(transform1);
-    entity1.addComponent(velocity1);
+    entity1.add(transform1);
+    entity1.add(velocity1);
 
     Entity entity2 = new Entity();
     TransformComponent transform2 = new TransformComponent(50f, 50f);
     VelocityComponent velocity2 = new VelocityComponent(100f);
     velocity2.velocity.set(-5f, 15f);
-    entity2.addComponent(transform2);
-    entity2.addComponent(velocity2);
+    entity2.add(transform2);
+    entity2.add(velocity2);
 
     Entity entity3 = new Entity();
     TransformComponent transform3 = new TransformComponent(100f, 100f);
-    entity3.addComponent(transform3);
+    entity3.add(transform3);
 
     engine.addEntity(entity1);
     engine.addEntity(entity2);

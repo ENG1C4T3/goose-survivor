@@ -1,6 +1,6 @@
 # Goose Survivor
 
-A 2D survival game built with [libGDX](https://libgdx.com/) using an Entity-Component-System (ECS) architecture.
+A 2D survival game built with [libGDX](https://libgdx.com/) using the [Ashley](https://github.com/libgdx/ashley) Entity-Component-System (ECS) architecture.
 
 ## Getting started
 
@@ -27,19 +27,18 @@ On Windows use `gradlew.bat` instead of `./gradlew`.
 │   └── src/
 │       ├── main/java/com/eng1c4t3/goosesurvivor/
 │       │   ├── GooseSurvivor.java   Entry point and game loop
-│       │   ├── ecs/                 ECS core: Engine, Entity, Component, EntitySystem
-│       │   ├── components/          Data-only components (Transform, Velocity, Texture, Player)
-│       │   ├── systems/             Logic that runs each frame (Input, Movement, Render)
+│       │   ├── components/          Data-only components implementing Ashley Component
+│       │   ├── systems/             Logic systems extending Ashley IteratingSystem / EntitySystem
 │       │   ├── entities/            EntityFactory for building preconfigured entities
-│       │   └── assets/              TextureManager for loading and disposing assets
+│       │   └── TextureManager.java  TextureManager for loading and disposing assets
 │       └── test/java/...            Unit tests, mirroring the main package layout
 └── misc/                       Project timelines and UML diagrams (PlantUML)
 ```
 
 ### Adding features
 
-- **New component:** add a data-only class in `components/` implementing `ecs.Component`.
-- **New system:** extend `ecs.EntitySystem` in `systems/` and register it in `GooseSurvivor#registerSystems`.
+- **New component:** add a data-only class in `components/` implementing `com.badlogic.ashley.core.Component`.
+- **New system:** extend `IteratingSystem` or `EntitySystem` in `systems/` and register it in `GooseSurvivor#registerSystems`.
 - **New entity type:** add a `create...` method to `entities.EntityFactory`.
 - **New asset:** put the file in `assets/` and load it in `assets.TextureManager`.
 

@@ -1,11 +1,11 @@
 package com.eng1c4t3.goosesurvivor.entities;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
-import com.eng1c4t3.goosesurvivor.ecs.Entity;
 
 /**
  * Factory for creating game entities with configured components.
@@ -37,10 +37,10 @@ public final class EntityFactory {
    */
   public static Entity createPlayer(float x, float y, float speed, TextureRegion region) {
     Entity player = new Entity();
-    player.addComponent(new PlayerComponent());
-    player.addComponent(new TransformComponent(x, y));
-    player.addComponent(new VelocityComponent(speed));
-    player.addComponent(new TextureComponent(region));
+    player.add(new PlayerComponent());
+    player.add(new TransformComponent(x, y));
+    player.add(new VelocityComponent(speed));
+    player.add(new TextureComponent(region));
     return player;
   }
 }

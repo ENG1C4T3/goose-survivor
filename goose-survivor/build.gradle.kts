@@ -41,6 +41,7 @@ application {
 }
 
 val gdxVersion = "1.14.2"
+val ashleyVersion = "1.7.4"
 val lwjglVersion = "3.3.6"
 
 configurations.configureEach {
@@ -60,6 +61,7 @@ dependencies {
     // LibGDX Core & Desktop Backend
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion")
+    implementation("com.badlogicgames.ashley:ashley:$ashleyVersion")
     runtimeOnly("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
 }
 

@@ -2,12 +2,12 @@ package com.eng1c4t3.goosesurvivor.systems;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
-import com.eng1c4t3.goosesurvivor.ecs.Engine;
-import com.eng1c4t3.goosesurvivor.ecs.Entity;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Set;
@@ -59,20 +59,20 @@ class InputSystemTest {
 
   private Entity createPlayerEntity(float maxSpeed) {
     Entity player = new Entity();
-    player.addComponent(new PlayerComponent());
-    player.addComponent(new VelocityComponent(maxSpeed));
+    player.add(new PlayerComponent());
+    player.add(new VelocityComponent(maxSpeed));
     return player;
   }
 
   @Test
   void testNoKeyPressedResultsInZeroVelocity() {
     Entity player = createPlayerEntity(200f);
-    player.getComponent(VelocityComponent.class).velocity.set(50f, 50f);
+    VelocityComponent.MAPPER.get(player).velocity.set(50f, 50f);
     engine.addEntity(player);
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(0f, vel.velocity.x, 1e-5f);
     assertEquals(0f, vel.velocity.y, 1e-5f);
   }
@@ -85,7 +85,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(0f, vel.velocity.x, 1e-5f);
     assertEquals(200f, vel.velocity.y, 1e-5f);
   }
@@ -98,7 +98,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(0f, vel.velocity.x, 1e-5f);
     assertEquals(200f, vel.velocity.y, 1e-5f);
   }
@@ -111,7 +111,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(0f, vel.velocity.x, 1e-5f);
     assertEquals(-200f, vel.velocity.y, 1e-5f);
   }
@@ -124,7 +124,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(0f, vel.velocity.x, 1e-5f);
     assertEquals(-200f, vel.velocity.y, 1e-5f);
   }
@@ -137,7 +137,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(-200f, vel.velocity.x, 1e-5f);
     assertEquals(0f, vel.velocity.y, 1e-5f);
   }
@@ -150,7 +150,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(-200f, vel.velocity.x, 1e-5f);
     assertEquals(0f, vel.velocity.y, 1e-5f);
   }
@@ -163,7 +163,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(200f, vel.velocity.x, 1e-5f);
     assertEquals(0f, vel.velocity.y, 1e-5f);
   }
@@ -176,7 +176,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(200f, vel.velocity.x, 1e-5f);
     assertEquals(0f, vel.velocity.y, 1e-5f);
   }
@@ -190,7 +190,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     float expected = (float) (200.0 / Math.sqrt(2.0));
     assertEquals(expected, vel.velocity.x, 1e-4f);
     assertEquals(expected, vel.velocity.y, 1e-4f);
@@ -208,7 +208,7 @@ class InputSystemTest {
 
     inputSystem.update(0.016f);
 
-    VelocityComponent vel = player.getComponent(VelocityComponent.class);
+    VelocityComponent vel = VelocityComponent.MAPPER.get(player);
     assertEquals(0f, vel.velocity.x, 1e-5f);
     assertEquals(0f, vel.velocity.y, 1e-5f);
   }
@@ -218,7 +218,7 @@ class InputSystemTest {
     Entity nonPlayer = new Entity();
     VelocityComponent velocity = new VelocityComponent(100f);
     velocity.velocity.set(50f, 50f);
-    nonPlayer.addComponent(velocity);
+    nonPlayer.add(velocity);
     engine.addEntity(nonPlayer);
 
     pressedKeys.add(Input.Keys.W);
@@ -231,7 +231,7 @@ class InputSystemTest {
   @Test
   void testPlayerWithoutVelocityComponentIgnored() {
     Entity player = new Entity();
-    player.addComponent(new PlayerComponent());
+    player.add(new PlayerComponent());
     engine.addEntity(player);
 
     pressedKeys.add(Input.Keys.W);
