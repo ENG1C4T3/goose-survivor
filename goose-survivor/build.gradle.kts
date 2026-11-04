@@ -41,6 +41,7 @@ application {
 }
 
 val gdxVersion = "1.14.2"
+val ashleyVersion = "1.7.4"
 val lwjglVersion = "3.3.6"
 
 configurations.configureEach {
@@ -60,12 +61,8 @@ dependencies {
     // LibGDX Core & Desktop Backend
     implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion")
+    implementation("com.badlogicgames.ashley:ashley:$ashleyVersion")
     runtimeOnly("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop")
-
-    // jakarta validation
-    implementation("jakarta.validation:jakarta.validation-api:3.0.2")
-    implementation("org.hibernate.validator:hibernate-validator:8.0.1.Final")
-    implementation("org.glassfish:jakarta.el:4.0.2")
 }
 
 tasks.named<Test>("test") {

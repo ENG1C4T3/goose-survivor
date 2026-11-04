@@ -1,6 +1,8 @@
 package com.eng1c4t3.goosesurvivor.systems;
 
-import com.eng1c4t3.goosesurvivor.Entity;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.systems.IteratingSystem;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
 
@@ -10,25 +12,28 @@ import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
  * @see TransformComponent
  * @see VelocityComponent
  */
-public class MovementSystem extends EntitySystem {
+public class MovementSystem extends IteratingSystem {
 
   /**
-   * Handles the movement of entities based on their velocity.
+   * Constructs a MovementSystem that processes entities with TransformComponent
+   * and VelocityComponent.
+   */
+  public MovementSystem() {
+    super(Family.all(TransformComponent.class, VelocityComponent.class).get());
+  }
+
+  /**
+   * Updates the position of the entity based on its velocity.
    *
+   * @param entity The entity to process.
    * @param deltaTime The time passed since the last frame.
    */
   @Override
-  public void update(float deltaTime) {
+  protected void processEntity(Entity entity, float deltaTime) {
+    TransformComponent transform = TransformComponent.MAPPER.get(entity);
+    VelocityComponent velocity = VelocityComponent.MAPPER.get(entity);
 
-    for (Entity entity : engine.getEntities()) {
-      if (entity.hasComponent(TransformComponent.class)
-          && entity.hasComponent(VelocityComponent.class)) {
-
-        TransformComponent transform = entity.getComponent(TransformComponent.class);
-        VelocityComponent velocity = entity.getComponent(VelocityComponent.class);
-        transform.position.x += velocity.velocity.x * deltaTime;
-        transform.position.y += velocity.velocity.y * deltaTime;
-      }
-    }
+    transform.position.x += velocity.velocity.x * deltaTime;
+    transform.position.y += velocity.velocity.y * deltaTime;
   }
 }
