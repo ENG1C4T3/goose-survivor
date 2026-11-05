@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
+import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
@@ -54,6 +55,8 @@ public class GooseSurvivor extends ApplicationAdapter {
     registerSystems();
     engine.addEntity(EntityFactory.createPlayer(
         textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
+    engine.addEntity(EntityFactory.createBlock(100, 100, 50, 50,
+        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
   }
 
   /**
@@ -62,6 +65,7 @@ public class GooseSurvivor extends ApplicationAdapter {
   private void registerSystems() {
     engine.addSystem(new InputSystem());
     engine.addSystem(new MovementSystem());
+    engine.addSystem(new CollisionSystem());
     engine.addSystem(new RenderSystem(batch, camera));
   }
 

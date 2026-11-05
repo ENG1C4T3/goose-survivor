@@ -56,6 +56,12 @@ public class RenderSystem extends IteratingSystem {
     TransformComponent transform = TransformComponent.MAPPER.get(entity);
     TextureComponent textureComp = TextureComponent.MAPPER.get(entity);
 
-    batch.draw(textureComp.region, transform.position.x, transform.position.y);
+    batch.draw(
+        textureComp.region,
+        transform.position.x,
+        transform.position.y,
+        transform.position.width,
+        transform.position.height
+    );
   }
 }
