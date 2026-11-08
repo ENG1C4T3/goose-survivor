@@ -1,8 +1,10 @@
 package com.eng1c4t3.goosesurvivor.systems;
 
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.Family;
+import com.badlogic.ashley.systems.IteratingSystem;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.eng1c4t3.goosesurvivor.Entity;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 
@@ -11,7 +13,7 @@ import com.eng1c4t3.goosesurvivor.components.TransformComponent;
  *
  * @see TextureComponent
  */
-public class RenderSystem extends EntitySystem {
+public class RenderSystem extends IteratingSystem {
   private final SpriteBatch batch;
   private final OrthographicCamera camera;
 
@@ -24,12 +26,13 @@ public class RenderSystem extends EntitySystem {
    *               projection for rendering.
    */
   public RenderSystem(SpriteBatch batch, OrthographicCamera camera) {
+    super(Family.all(TransformComponent.class, TextureComponent.class).get());
     this.batch = batch;
     this.camera = camera;
   }
 
   /**
-   * Renders entities with textures and positions.
+   * Updates camera, sets projection matrix, and renders all matching entities within the batch.
    *
    * @param deltaTime The time passed since the last frame.
    */
@@ -38,16 +41,21 @@ public class RenderSystem extends EntitySystem {
     camera.update();
     batch.setProjectionMatrix(camera.combined);
     batch.begin();
-
-    for (Entity entity : engine.getEntities()) {
-      if (entity.hasComponent(TransformComponent.class)
-          && entity.hasComponent(TextureComponent.class)) {
-        TransformComponent transform = entity.getComponent(TransformComponent.class);
-        TextureComponent textureComp = entity.getComponent(TextureComponent.class);
-
-        batch.draw(textureComp.region, transform.position.x, transform.position.y);
-      }
-    }
+    super.update(deltaTime);
     batch.end();
+  }
+
+  /**
+   * Renders a single entity with its texture and position.
+   *
+   * @param entity The entity to render.
+   * @param deltaTime The time passed since the last frame.
+   */
+  @Override
+  protected void processEntity(Entity entity, float deltaTime) {
+    TransformComponent transform = TransformComponent.MAPPER.get(entity);
+    TextureComponent textureComp = TextureComponent.MAPPER.get(entity);
+
+    batch.draw(textureComp.region, transform.position.x, transform.position.y);
   }
 }
