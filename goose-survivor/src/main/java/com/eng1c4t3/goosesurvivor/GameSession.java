@@ -1,4 +1,7 @@
 package com.eng1c4t3.goosesurvivor;
+import com.badlogic.ashley.core.Engine;
+import com.eng1c4t3.goosesurvivor.systems.InputSystem;
+import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 
 
 public class GameSession {
@@ -6,16 +9,27 @@ public class GameSession {
     private SessionState gameState = SessionState.RUNNING;
     private float elapsedTime = 0f;
 
+    private final Engine engine;
     private final GameWorld world;
 
+    /**
+     * Creates a new session with its engine, world and
+     gameplay system
+     * in order to make sure that the entity added by world
+     could enter Session's Engine
+     */
+    public GameSession(){
+        this.engine = new Engine();
+        this.world = new GameWorld(engine);
 
-    public GameSession(GameWorld world){
-        if (world == null){
-            throw new IllegalArgumentException(
-                "Game world should not be null"
-            );
-        }
-        this.world = world;
+        InputSystem inputSystem = new InputSystem();
+        inputSystem.priority = 0;
+
+        MovementSystem movementSystem = new MovementSystem();
+        movementSystem.priority = 1;
+
+        engine.addSystem(inputSystem);
+        engine.addSystem(movementSystem);
     }
 
     public GameWorld getWorld(){
@@ -45,13 +59,16 @@ public class GameSession {
 
     /**
      * Advance timer while game is running
-     * @param deltaTime elapes time in seconds
+     * 
+     * @param deltaTime elapes time in seconds since previous update
+     * 
      * @throws IllegalArgumentException if deltaTime is negative
+     or not finite
      */
     public void update(float deltaTime){
-        if (deltaTime < 0f){
+        if (!Float.isFinite(deltaTime) || deltaTime < 0f){
             throw new IllegalArgumentException(
-                "Delta time must not be negative"
+                "Delta time must be finite and non-negative"
             );
         }
         if(gameState != SessionState.RUNNING){
@@ -63,9 +80,10 @@ public class GameSession {
         if(elapsedTime >= TIME_LIMIT){
             elapsedTime = TIME_LIMIT;
             lose();
+            return;
         }
 
-        //TODO: Update gameplay system
+        engine.update(deltaTime);
 
     }
 

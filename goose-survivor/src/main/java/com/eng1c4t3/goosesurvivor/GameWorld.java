@@ -1,32 +1,52 @@
 package com.eng1c4t3.goosesurvivor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
+import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.utils.ImmutableArray;
 
-public class GameWorld {
-    private final List<Entity> entities = new ArrayList<>();
-    
+/**
+ * Provides access to entities stared in Ashley engine
+ */
+public class GameWorld{
+    private final Engine engine;
+
     /**
-    * Adds an entity to this world
-    * @param entity  the entity to add
-    * @throws IlligealArgumentException if Entity is null
-    or already been add 
-    */
+     * Creates a world backed by the given engine
+     * 
+     * @param engine that stares world's entities
+     * @throws IllegalArgumentException if engine is null
+     * 
+     */
+    public GameWorld(Engine engine){
+        if (engine == null){
+            throw new IllegalArgumentException(
+                "Engine must not be null"
+            );
+        }
+        this.engine = engine;
+    }
+
+    /**
+     * 
+     * Add an entity to this world
+     * @param entity  the entity to add
+     * @throws IllegalArgumentException if Entity is null
+     or already been add 
+     */
     public void addEntity(Entity entity){
         if(entity == null){
             throw new IllegalArgumentException(
                 "Entity must not be null"
             );
         }
-        if(entities.contains(entity)){
+        if(engine.getEntities().contains(entity, true)){
             throw new IllegalArgumentException(
                 "The same entity should not appear twice."
             );
         }
         
-        entities.add(entity);
+        engine.addEntity(entity);
     }
     
     /**
@@ -34,19 +54,19 @@ public class GameWorld {
      * @param entity the entity to remove
      */
     public void removeEntity(Entity entity){
-        entities.remove(entity);
+        engine.removeEntity(entity);
     }
 
     /**
-     * Returns an unmodifiable view of enities 
+     * Return a read-only view of this world's entites
      * 
      * in the returned view, the entites and their
       components remain mutable
      *
      * @return an unmodifiable view of entities in the world
      */
-    public List<Entity> getEntities(){
-        return Collections.unmodifiableList(entities);
+    public ImmutableArray<Entity> getEntities(){
+        return engine.getEntities();
     }
 
 }
