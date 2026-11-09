@@ -1,27 +1,22 @@
 package com.eng1c4t3.goosesurvivor;
 
-import com.badlogic.ashley.core.Engine;
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
-import com.eng1c4t3.goosesurvivor.systems.InputSystem;
-import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
-import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
 
 /**
- * Represents the main game class.
+ * Start the application.
+ * act as main class
+ * manage active screen
+ *
  */
-public class GooseSurvivor extends ApplicationAdapter {
+public class GooseSurvivor extends Game {
 
   /**
-   * The entry point of the application. Configures and starts the game.
+   * Start application.
    *
-   * @param args The command-line arguments passed to the application.
+   * @param args command-line arguments
    */
   public static void main(String[] args) {
     Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
@@ -32,55 +27,26 @@ public class GooseSurvivor extends ApplicationAdapter {
     new Lwjgl3Application(new GooseSurvivor(), config);
   }
 
-  private Engine engine;
-  private SpriteBatch batch;
-  private OrthographicCamera camera;
-  private TextureManager textureManager;
-
   /**
-   * Initialises the game.
+   * Creates new session, opens its gameplay screen.
+   *
    */
   @Override
   public void create() {
-    engine = new Engine();
-    batch = new SpriteBatch();
-    camera = new OrthographicCamera();
-    camera.setToOrtho(false, 800, 480);
-
-    textureManager = new TextureManager();
-    textureManager.loadTextures();
-    textureManager.finishLoading();
-
-    registerSystems();
-    engine.addEntity(EntityFactory.createPlayer(
-        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
+    GameSession session = new GameSession();
+    setScreen(new GameScreen(session));
   }
 
   /**
-   * Registers the game systems.
-   */
-  private void registerSystems() {
-    engine.addSystem(new InputSystem());
-    engine.addSystem(new MovementSystem());
-    engine.addSystem(new RenderSystem(batch, camera));
-  }
-
-  /**
-   * Updates the game state.
-   */
-  @Override
-  public void render() {
-    Gdx.gl.glClearColor(0, 0, 0, 1);
-    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-    engine.update(Gdx.graphics.getDeltaTime());
-  }
-
-  /**
-   * Disposes of the game resources.
+   * Hides and releses active screen.
    */
   @Override
   public void dispose() {
-    batch.dispose();
-    textureManager.dispose();
+    Screen currentScreen = getScreen();
+    setScreen(null);
+
+    if (currentScreen != null) {
+      currentScreen.dispose();
+    }
   }
 }
