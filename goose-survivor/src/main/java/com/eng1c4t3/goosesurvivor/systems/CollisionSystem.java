@@ -6,7 +6,11 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
+import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
+import com.eng1c4t3.goosesurvivor.components.HealthComponent;
+import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
 
@@ -31,6 +35,7 @@ public class CollisionSystem extends EntitySystem {
   // Reusable rectangles to avoid garbage collection overhead inside the update loop
   private final Rectangle rectA = new Rectangle();
   private final Rectangle rectB = new Rectangle();
+  private final Vector2 knockbackDirection = new Vector2();
 
   /**
    * Caches all entities required for collision detection.
@@ -63,14 +68,24 @@ public class CollisionSystem extends EntitySystem {
       TransformComponent transform = TransformComponent.MAPPER.get(mover);
       VelocityComponent velocity = VelocityComponent.MAPPER.get(mover);
 
-      rectA.set(transform.position.x, transform.position.y,
-          transform.position.width, transform.position.height);
+      boolean moverIsPlayer = PlayerComponent.MAPPER.has(mover);
 
       for (int j = 0; j < collidableEntities.size(); ++j) {
         Entity other = collidableEntities.get(j);
         if (mover == other) {
           continue; // Skip self
         }
+
+        // The player must only ever be displaced by static geometry, never by other moving
+        // entities (e.g. enemies walking into them). Otherwise, enemies would shove the player
+        // around without any input. The other entity is pushed out of the player instead.
+        if (moverIsPlayer && VelocityComponent.MAPPER.has(other)) {
+          continue;
+        }
+
+        // Refresh each iteration, since a previous resolution may have moved the mover
+        rectA.set(transform.position.x, transform.position.y,
+            transform.position.width, transform.position.height);
 
         TransformComponent otherTransform = TransformComponent.MAPPER.get(other);
         CollisionComponent otherCollision = CollisionComponent.MAPPER.get(other);
@@ -79,16 +94,65 @@ public class CollisionSystem extends EntitySystem {
             otherTransform.position.width, otherTransform.position.height);
 
         if (rectA.overlaps(rectB)) {
-          switch (otherCollision.type) {
-            case SOLID:
-              resolveSolidCollision(transform, velocity, otherTransform);
-              break;
-            default:
-              break;
+          if (EnemyComponent.MAPPER.has(mover) && PlayerComponent.MAPPER.has(other)) {
+            handleEnemyPlayerContact(mover, other);
+          } else if (otherCollision.type == CollisionComponent.Type.SOLID) {
+            resolveSolidCollision(transform, velocity, otherTransform);
           }
         }
       }
     }
+  }
+
+  /**
+   * Handles an enemy touching the player: the player takes the enemy's contact damage and the
+   * enemy is knocked back in the direction opposite to its current velocity.
+   *
+   * <p>Damage is only dealt once per knockback, so an enemy can't hit the player every frame
+   * while the two still overlap.
+   *
+   * @param enemy The enemy entity.
+   * @param player The player entity.
+   */
+  private void handleEnemyPlayerContact(Entity enemy, Entity player) {
+    EnemyComponent enemyComponent = EnemyComponent.MAPPER.get(enemy);
+    TransformComponent enemyTransform = TransformComponent.MAPPER.get(enemy);
+    VelocityComponent enemyVelocity = VelocityComponent.MAPPER.get(enemy);
+    TransformComponent playerTransform = TransformComponent.MAPPER.get(player);
+
+    // Work out the knockback direction before resolving the overlap, since resolution zeroes
+    // a component of the velocity.
+    knockbackDirection.set(enemyVelocity.velocity).scl(-1);
+    if (knockbackDirection.isZero()) {
+      // Enemy isn't moving (e.g. the player walked into it): push it away from the player
+      knockbackDirection.set(
+          enemyTransform.position.x + enemyTransform.position.width / 2
+              - (playerTransform.position.x + playerTransform.position.width / 2),
+          enemyTransform.position.y + enemyTransform.position.height / 2
+              - (playerTransform.position.y + playerTransform.position.height / 2));
+      if (knockbackDirection.isZero()) {
+        knockbackDirection.set(1, 0);
+      }
+    }
+    knockbackDirection.nor();
+
+    // Keep the enemy from overlapping the player this frame
+    resolveSolidCollision(enemyTransform, enemyVelocity, playerTransform);
+
+    if (enemyComponent.isKnockedBack()) {
+      return;
+    }
+
+    HealthComponent playerHealth = HealthComponent.MAPPER.get(player);
+    if (playerHealth != null) {
+      playerHealth.takeDamage(enemyComponent.damage);
+    }
+
+    // Cover knockbackDistance over knockbackDuration; EnemySystem leaves the velocity alone
+    // until the timer runs out.
+    enemyComponent.knockbackTimer = enemyComponent.knockbackDuration;
+    enemyVelocity.velocity.set(knockbackDirection)
+        .scl(enemyComponent.knockbackDistance / enemyComponent.knockbackDuration);
   }
 
   /**

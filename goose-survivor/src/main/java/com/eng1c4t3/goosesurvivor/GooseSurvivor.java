@@ -1,15 +1,19 @@
 package com.eng1c4t3.goosesurvivor;
 
 import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
+import com.eng1c4t3.goosesurvivor.systems.EnemySystem;
+import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
@@ -36,7 +40,8 @@ public class GooseSurvivor extends ApplicationAdapter {
   private Engine engine;
   private SpriteBatch batch;
   private OrthographicCamera camera;
-  private TextureManager textureManager;
+  public static TextureManager textureManager = new TextureManager();
+  private FPSLogger fpsloger;
 
   /**
    * Initialises the game.
@@ -47,16 +52,17 @@ public class GooseSurvivor extends ApplicationAdapter {
     batch = new SpriteBatch();
     camera = new OrthographicCamera();
     camera.setToOrtho(false, 800, 480);
+    fpsloger = new FPSLogger();
 
-    textureManager = new TextureManager();
     textureManager.loadTextures();
     textureManager.finishLoading();
 
+
     registerSystems();
-    engine.addEntity(EntityFactory.createPlayer(
-        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
-    engine.addEntity(EntityFactory.createBlock(100, 100, 50, 50,
-        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
+    engine.addEntity(EntityFactory.createPlayer(255, 255));
+    engine.addEntity(EntityFactory.createBlock(100, 100, 50, 50));
+    engine.addEntity(EntityFactory.createEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700, 700));
+    engine.addEntity(EntityFactory.createEnemy(EntityFactory.EnemyType.LONG_BOI, 400, 400));
   }
 
   /**
@@ -67,6 +73,8 @@ public class GooseSurvivor extends ApplicationAdapter {
     engine.addSystem(new MovementSystem());
     engine.addSystem(new CollisionSystem());
     engine.addSystem(new RenderSystem(batch, camera));
+    engine.addSystem(new HealthSystem());
+    engine.addSystem(new EnemySystem());
   }
 
   /**
@@ -77,6 +85,7 @@ public class GooseSurvivor extends ApplicationAdapter {
     Gdx.gl.glClearColor(0, 0, 0, 1);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     engine.update(Gdx.graphics.getDeltaTime());
+    fpsloger.log();
   }
 
   /**
