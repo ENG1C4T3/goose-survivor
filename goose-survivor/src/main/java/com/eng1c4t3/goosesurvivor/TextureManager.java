@@ -8,10 +8,12 @@ import com.badlogic.gdx.utils.Disposable;
 /**
  * Manages loading, retrieving, and disposing of game textures and assets.
  */
-public class TextureManager implements Disposable {
-  public static final String PLAYER_TEXTURE = "libgdx.png";
-
-  private final AssetManager assetManager;
+public record TextureManager(AssetManager assetManager) implements Disposable {
+  public static final String PLAYER_TEXTURE = "ph_player.png";
+  public static final String GOOSE_TEXTURE = "ph_goose.png";
+  public static final String LONG_BOI_TEXTURE = "ph_longboi.png";
+  public static final String PROJECTILE_TEXTURE = "ph_projectile.png";
+  public static final String BLOCK_TEXTURE = "libgdx.png";
 
   /**
    * Constructs a new TextureManager with a default {@link AssetManager}.
@@ -25,8 +27,7 @@ public class TextureManager implements Disposable {
    *
    * @param assetManager The {@link AssetManager} instance to use.
    */
-  public TextureManager(AssetManager assetManager) {
-    this.assetManager = assetManager;
+  public TextureManager {
   }
 
   /**
@@ -34,6 +35,10 @@ public class TextureManager implements Disposable {
    */
   public void loadTextures() {
     assetManager.load(PLAYER_TEXTURE, Texture.class);
+    assetManager.load(GOOSE_TEXTURE, Texture.class);
+    assetManager.load(LONG_BOI_TEXTURE, Texture.class);
+    assetManager.load(PROJECTILE_TEXTURE, Texture.class);
+    assetManager.load(BLOCK_TEXTURE, Texture.class);
   }
 
   /**
@@ -68,7 +73,7 @@ public class TextureManager implements Disposable {
    *
    * @return The {@link AssetManager} managed by this instance.
    */
-  public AssetManager getAssetManager() {
+  @Override public AssetManager assetManager() {
     return assetManager;
   }
 

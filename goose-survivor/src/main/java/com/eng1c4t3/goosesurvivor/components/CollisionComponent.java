@@ -13,22 +13,19 @@ public class CollisionComponent implements Component {
   /**
    * Represents the type of collision for an entity.
    */
-  public enum CollisionType {
+  public enum Type {
     SOLID,
     TRIGGER,
-    ITEM,
-    PLAYER,
-    ENEMY
   }
 
-  public CollisionType type;
+  public Type type;
 
   /**
    * Constructs a new CollisionComponent with the specified collision type.
    *
-   * @param type The {@link CollisionType} that defines the collision behaviour of the entity.
+   * @param type The {@link Type} that defines the collision behaviour of the entity.
    */
-  public CollisionComponent(CollisionType type) {
+  public CollisionComponent(Type type) {
     this.type = type;
   }
 }
