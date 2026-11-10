@@ -14,6 +14,7 @@ public record TextureManager(AssetManager assetManager) implements Disposable {
   public static final String LONG_BOI_TEXTURE = "ph_longboi.png";
   public static final String PROJECTILE_TEXTURE = "ph_projectile.png";
   public static final String BLOCK_TEXTURE = "libgdx.png";
+  public static final String HEALTH_PACK_TEXTURE = "ph_healthpack.png";
 
   /**
    * Constructs a new TextureManager with a default {@link AssetManager}.
@@ -39,6 +40,7 @@ public record TextureManager(AssetManager assetManager) implements Disposable {
     assetManager.load(LONG_BOI_TEXTURE, Texture.class);
     assetManager.load(PROJECTILE_TEXTURE, Texture.class);
     assetManager.load(BLOCK_TEXTURE, Texture.class);
+    assetManager.load(HEALTH_PACK_TEXTURE, Texture.class);
   }
 
   /**

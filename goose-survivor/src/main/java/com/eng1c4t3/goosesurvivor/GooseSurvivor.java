@@ -13,8 +13,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
 import com.eng1c4t3.goosesurvivor.systems.EnemySystem;
+import com.eng1c4t3.goosesurvivor.systems.EventCleanupSystem;
 import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
+import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
 
@@ -61,6 +63,7 @@ public class GooseSurvivor extends ApplicationAdapter {
     registerSystems();
     engine.addEntity(EntityFactory.createPlayer(255, 255));
     engine.addEntity(EntityFactory.createBlock(100, 100, 50, 50));
+    engine.addEntity(EntityFactory.createHealthPack(300, 200, 25));
     engine.addEntity(EntityFactory.createEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700, 700));
     engine.addEntity(EntityFactory.createEnemy(EntityFactory.EnemyType.LONG_BOI, 400, 400));
   }
@@ -70,11 +73,15 @@ public class GooseSurvivor extends ApplicationAdapter {
    */
   private void registerSystems() {
     engine.addSystem(new InputSystem());
+    // Must come after InputSystem, which creates the trigger events it handles
+    engine.addSystem(new InteractionSystem());
     engine.addSystem(new MovementSystem());
     engine.addSystem(new CollisionSystem());
     engine.addSystem(new RenderSystem(batch, camera));
     engine.addSystem(new HealthSystem());
     engine.addSystem(new EnemySystem());
+    // Runs last regardless of order (highest priority value): destroys this frame's events
+    engine.addSystem(new EventCleanupSystem());
   }
 
   /**

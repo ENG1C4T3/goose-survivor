@@ -4,13 +4,24 @@ package "Components (Pure Data)" {
     class InteractableComponent {
         + float range
         + String promptText
+        + boolean singleUse
     }
-    
+
+    class HealOnInteractComponent {
+        ' Interaction effect
+        + float amount
+    }
+
     class TriggerEventComponent {
         + Entity sourcePlayer
         + Entity targetInteractable
         + ActionType action
     }
+
+    enum ActionType {
+        INTERACT
+    }
+    TriggerEventComponent --> ActionType
 }
 
 package "Systems (Pure Logic)" {
@@ -23,7 +34,7 @@ package "Systems (Pure Logic)" {
         ' Processes the event logic
         + void update(float deltaTime)
     }
-    
+
     class EventCleanupSystem {
         ' Runs at the very end of the frame
         + void update(float deltaTime)
@@ -35,5 +46,7 @@ InputSystem .right.> TriggerEventComponent : 1. Detects keypress in range\nCreat
 InteractionSystem ..> TriggerEventComponent : 2. Reads Event Entity\nExecutes game logic
 EventCleanupSystem ..> TriggerEventComponent : 3. Destroys Event Entity\nat end of frame
 
-InteractionSystem ..> InteractableComponent : reads
+InputSystem ..> InteractableComponent : reads range
+InteractionSystem ..> InteractableComponent : reads singleUse
+InteractionSystem ..> HealOnInteractComponent : applies effect
 @enduml
