@@ -2,6 +2,12 @@ package com.eng1c4t3.goosesurvivor.entities;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.eng1c4t3.goosesurvivor.TextureManager;
+import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
+import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
+import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
+import com.eng1c4t3.goosesurvivor.components.HealthComponent;
+import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
@@ -12,35 +18,140 @@ import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
  */
 public final class EntityFactory {
 
+  /** Seconds the player is invulnerable for after being hit. */
+  public static final float PLAYER_DAMAGE_COOLDOWN = 0.5f;
+
+  /**
+   * The kinds of enemy that can be created.
+   */
+  public enum EnemyType {
+    GOOSE,
+    FAST_GOOSE,
+    TANK_GOOSE,
+    GRADIENT_GOOSE,
+    LONG_BOI
+  }
+
+  /**
+   * The stats that distinguish one enemy type from another.
+   *
+   * @param size      Width and height of the enemy.
+   * @param health    Maximum health.
+   * @param speed     Maximum movement speed.
+   * @param damage    Contact damage dealt to the player.
+   * @param knockback Distance the enemy is knocked back after touching the
+   *                  player.
+   * @param texture   File name of the enemy's texture.
+   */
+  public record EnemyStats(float size, float health, float speed, float damage,
+      float knockback, String texture) {
+  }
+
   private EntityFactory() {
-    // Utility class, no instantiation allowed
   }
 
   /**
-   * Creates a player entity with default position and velocity.
+   * Returns the stats for an enemy type.
    *
-   * @param region The texture region for the player sprite.
-   * @return A newly constructed player {@link Entity}.
+   * @param type The enemy type.
+   * @return The {@link EnemyStats} for that type.
    */
-  public static Entity createPlayer(TextureRegion region) {
-    return createPlayer(10f, 10f, 200f, region);
+  public static EnemyStats statsFor(EnemyType type) {
+    return switch (type) {
+      case GOOSE -> new EnemyStats(32f, 100f, 70f, 10f, 80f, TextureManager.GOOSE_TEXTURE);
+      case FAST_GOOSE -> new EnemyStats(32f, 100f, 100f, 5f, 60f, TextureManager.GOOSE_TEXTURE);
+      case TANK_GOOSE -> new EnemyStats(48f, 300f, 40f, 15f, 40f, TextureManager.GOOSE_TEXTURE);
+      case GRADIENT_GOOSE ->
+          new EnemyStats(32f, 150f, 80f, 10f, 80f, TextureManager.GOOSE_TEXTURE);
+      case LONG_BOI ->
+          new EnemyStats(64f, 500f, 100f, 20f, 100f, TextureManager.LONG_BOI_TEXTURE);
+    };
   }
 
   /**
-   * Creates a player entity with custom initial coordinates and speed.
+   * Creates an enemy entity of the given type.
    *
-   * @param x The initial x-coordinate.
-   * @param y The initial y-coordinate.
-   * @param speed The maximum movement speed.
-   * @param region The texture region for the player sprite.
+   * @param type   The enemy type, which decides its stats and texture.
+   * @param startX The initial x-coordinate.
+   * @param startY The initial y-coordinate.
+   * @param region The texture region for entity sprite
+   *
+   * @return A newly constructed enemy {@link Entity}.
+   */
+  public static Entity createEnemy(
+      EnemyType type, float startX, float startY, TextureRegion region) {
+    EnemyStats stats = statsFor(type);
+
+    Entity enemy = new Entity();
+    enemy.add(new TransformComponent(startX, startY, stats.size(), stats.size()));
+    enemy.add(new HealthComponent(stats.health()));
+    enemy.add(new VelocityComponent(stats.speed()));
+    enemy.add(new EnemyComponent(stats.damage(), stats.knockback()));
+    enemy.add(new TextureComponent(region));
+    enemy.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    return enemy;
+  }
+
+  /**
+   * Creates a player entity with custom initial coordinates.
+   *
+   * @param x      The initial x-coordinate.
+   * @param y      The initial y-coordinate.
+   * @param region The texture region for entity sprite
+   *
    * @return A newly constructed player {@link Entity}.
    */
-  public static Entity createPlayer(float x, float y, float speed, TextureRegion region) {
+  public static Entity createPlayer(float x, float y, TextureRegion region) {
     Entity player = new Entity();
     player.add(new PlayerComponent());
-    player.add(new TransformComponent(x, y));
-    player.add(new VelocityComponent(speed));
+    player.add(new TransformComponent(x, y, 32f, 32f));
+    player.add(new HealthComponent(100, PLAYER_DAMAGE_COOLDOWN));
+    player.add(new VelocityComponent(100f));
     player.add(new TextureComponent(region));
+    player.add(new CollisionComponent(CollisionComponent.Type.SOLID));
     return player;
+  }
+
+  /**
+   * Creates a block entity with custom initial coordinates, dimensions, and
+   * texture region.
+   *
+   * @param x      The initial x-coordinate.
+   * @param y      The initial y-coordinate.
+   * @param width  The width of the block.
+   * @param height The height of the block.
+   * @param region The texture region for entity sprite
+   *
+   * @return A newly constructed block {@link Entity}.
+   */
+  public static Entity createBlock(
+      float x, float y, float width, float height, TextureRegion region) {
+    Entity block = new Entity();
+    block.add(new TransformComponent(x, y, width, height));
+    block.add(new TextureComponent(region));
+    block.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    return block;
+  }
+
+  /**
+   * Creates a single-use health pack that heals the player when they interact
+   * with it.
+   *
+   * <p>The health pack has no collision, so the player can walk over it.
+   *
+   * @param x          The x-coordinate.
+   * @param y          The y-coordinate.
+   * @param healAmount The amount of health restored to the player.
+   * @param region     The texture region for entity sprite
+   *
+   * @return A newly constructed health pack {@link Entity}.
+   */
+  public static Entity createHealthPack(float x, float y, float healAmount, TextureRegion region) {
+    Entity healthPack = new Entity();
+    healthPack.add(new TransformComponent(x, y, 24f, 24f));
+    healthPack.add(new TextureComponent(region));
+    healthPack.add(new InteractableComponent(48f, "Press E to heal", true));
+    healthPack.add(new HealOnInteractComponent(healAmount));
+    return healthPack;
   }
 }

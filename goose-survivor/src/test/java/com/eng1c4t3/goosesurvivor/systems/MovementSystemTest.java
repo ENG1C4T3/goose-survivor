@@ -24,7 +24,7 @@ class MovementSystemTest {
   @Test
   void testEntityMovement() {
     Entity entity = new Entity();
-    TransformComponent transform = new TransformComponent(10f, 20f);
+    TransformComponent transform = new TransformComponent(10f, 20f, 1f, 1f);
     VelocityComponent velocity = new VelocityComponent(100f);
     velocity.velocity.set(50f, -30f);
 
@@ -41,7 +41,7 @@ class MovementSystemTest {
   @Test
   void testStationaryEntityDoesNotMove() {
     Entity entity = new Entity();
-    TransformComponent transform = new TransformComponent(100f, 200f);
+    TransformComponent transform = new TransformComponent(100f, 200f, 1f, 1f);
     VelocityComponent velocity = new VelocityComponent(100f);
     velocity.velocity.set(0f, 0f);
 
@@ -58,7 +58,7 @@ class MovementSystemTest {
   @Test
   void testEntityWithoutVelocityComponentNotModified() {
     Entity entity = new Entity();
-    TransformComponent transform = new TransformComponent(50f, 60f);
+    TransformComponent transform = new TransformComponent(50f, 60f, 1f, 1f);
     entity.add(transform);
     engine.addEntity(entity);
 
@@ -85,21 +85,21 @@ class MovementSystemTest {
   @Test
   void testMultipleEntitiesMovement() {
     Entity entity1 = new Entity();
-    TransformComponent transform1 = new TransformComponent(0f, 0f);
+    TransformComponent transform1 = new TransformComponent(0f, 0f, 1f, 1f);
     VelocityComponent velocity1 = new VelocityComponent(100f);
     velocity1.velocity.set(10f, 20f);
     entity1.add(transform1);
     entity1.add(velocity1);
 
     Entity entity2 = new Entity();
-    TransformComponent transform2 = new TransformComponent(50f, 50f);
+    TransformComponent transform2 = new TransformComponent(50f, 50f, 1f, 1f);
     VelocityComponent velocity2 = new VelocityComponent(100f);
     velocity2.velocity.set(-5f, 15f);
     entity2.add(transform2);
     entity2.add(velocity2);
 
     Entity entity3 = new Entity();
-    TransformComponent transform3 = new TransformComponent(100f, 100f);
+    TransformComponent transform3 = new TransformComponent(100f, 100f, 1f, 1f);
     entity3.add(transform3);
 
     engine.addEntity(entity1);

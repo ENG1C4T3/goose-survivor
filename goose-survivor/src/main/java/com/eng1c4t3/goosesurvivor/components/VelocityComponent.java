@@ -24,7 +24,8 @@ public class VelocityComponent implements Component {
 
   /**
    * Constructs a VelocityComponent with a specified maximum speed.
-   * Initialises the velocity vector to (0, 0).
+   *
+   * <p>The velocity vector is initialised to (0, 0).
    *
    * @param maxSpeed The maximum speed of the entity represented by this component.
    */

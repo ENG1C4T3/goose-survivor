@@ -1,7 +1,17 @@
 package com.eng1c4t3.goosesurvivor;
 
 import com.badlogic.ashley.core.Engine;
+import com.badlogic.ashley.core.Entity;
+import com.badlogic.ashley.core.EntityListener;
+import com.badlogic.ashley.core.Family;
+import com.eng1c4t3.goosesurvivor.components.HealthComponent;
+import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
+import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
+import com.eng1c4t3.goosesurvivor.systems.EnemySystem;
+import com.eng1c4t3.goosesurvivor.systems.EventCleanupSystem;
+import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
+import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 
 /**
@@ -16,9 +26,7 @@ public class GameSession {
   private final GameWorld world;
 
   /**
-   * Creates a new session with its engine, world and gameplay system.
-   * In order to make sure that the entity added by world could enter Session's
-   * Engine
+   * Creates a session with its engine, world and gameplay systems.
    */
   public GameSession() {
     this.engine = new Engine();
@@ -27,11 +35,30 @@ public class GameSession {
     InputSystem inputSystem = new InputSystem();
     inputSystem.priority = 0;
 
+    InteractionSystem interactionSystem = new InteractionSystem();
+    interactionSystem.priority = 1;
+
+    EnemySystem enemySystem = new EnemySystem();
+    enemySystem.priority = 2;
+
     MovementSystem movementSystem = new MovementSystem();
-    movementSystem.priority = 1;
+    movementSystem.priority = 3;
+
+    CollisionSystem collisionSystem = new CollisionSystem();
+    collisionSystem.priority = 4;
+
+    HealthSystem healthSystem = new HealthSystem();
+    healthSystem.priority = 5;
 
     engine.addSystem(inputSystem);
+    engine.addSystem(interactionSystem);
+    engine.addSystem(enemySystem);
     engine.addSystem(movementSystem);
+    engine.addSystem(collisionSystem);
+    engine.addSystem(healthSystem);
+    engine.addSystem(new EventCleanupSystem());
+
+    registerPlayerDeathListener();
   }
 
   public GameWorld getWorld() {
@@ -89,6 +116,27 @@ public class GameSession {
 
     engine.update(deltaTime);
 
+  }
+
+  private void registerPlayerDeathListener() {
+    Family playerFamily = Family.all(
+        PlayerComponent.class, HealthComponent.class).get();
+    EntityListener playerListener = new EntityListener() {
+      @Override
+      public void entityAdded(Entity entity) {
+
+      }
+
+      @Override
+      public void entityRemoved(Entity entity) {
+        HealthComponent health = HealthComponent.MAPPER.get(entity);
+        if (health != null && health.isDead()) {
+          lose();
+        }
+      }
+    };
+
+    engine.addEntityListener(playerFamily, playerListener);
   }
 
   /**
