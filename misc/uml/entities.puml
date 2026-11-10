@@ -1,5 +1,10 @@
 @startuml
 skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor<<planned>> #EEEEEE
+    BorderColor<<planned>> #999999
+    FontColor<<planned>> #777777
+}
 
 package "Ashley ECS Framework" {
     interface Component <<com.badlogic.ashley.core>>
@@ -8,14 +13,18 @@ package "Ashley ECS Framework" {
         + Component remove(Class<Component> componentClass)
         + T getComponent(Class<T> componentClass)
         + boolean hasComponent(Class<Component> componentClass)
+        + boolean isScheduledForRemoval()
     }
     class Engine <<com.badlogic.ashley.core>> {
         + void addEntity(Entity entity)
         + void removeEntity(Entity entity)
         + void addSystem(EntitySystem system)
+        + ImmutableArray<Entity> getEntitiesFor(Family family)
         + void update(float deltaTime)
     }
     abstract class EntitySystem <<com.badlogic.ashley.core>> {
+        + EntitySystem(int priority)
+        + void addedToEngine(Engine engine)
         + void update(float deltaTime)
     }
     abstract class IteratingSystem <<com.badlogic.ashley.systems>> {
@@ -40,7 +49,8 @@ package "Ashley ECS Framework" {
 package "Components (Pure Data)" {
     class TransformComponent {
         + {static} ComponentMapper<TransformComponent> MAPPER
-        + Vector2 position
+        + Rectangle position
+        ' Position and size; also used as the collision bounds
     }
     Component <|.. TransformComponent
 
@@ -63,47 +73,85 @@ package "Components (Pure Data)" {
     }
     Component <|.. PlayerComponent
 
-    class BoundsComponent {
-        + Rectangle bounds
+    class CollisionComponent {
+        + {static} ComponentMapper<CollisionComponent> MAPPER
+        + Type type
     }
-    Component <|.. BoundsComponent
+    Component <|.. CollisionComponent
+
+    enum "CollisionComponent.Type" as CollisionType {
+        SOLID
+        TRIGGER
+    }
+    CollisionComponent --> CollisionType
 
     class HealthComponent {
+        + {static} ComponentMapper<HealthComponent> MAPPER
         + float health
         + float maxHealth
         + float damageCooldown
+        + float damageCooldownTimer
+        + boolean takeDamage(float damage)
+        + void heal(float amount)
+        + boolean isInvulnerable()
+        + boolean isDead()
     }
     Component <|.. HealthComponent
 
     class EnemyComponent {
-        + EnemyType type
+        + {static} ComponentMapper<EnemyComponent> MAPPER
         + float damage
+        + float knockbackDistance
+        + float knockbackDuration
+        + float knockbackTimer
+        + boolean isKnockedBack()
     }
     Component <|.. EnemyComponent
 
-    enum EnemyType {
-        NORMAL_GOOSE
-        FAST_GOOSE
-        TANK_GOOSE
-        GRADIENT_GOOSE
-        LONG_BOI
-    }
-    EnemyComponent --> EnemyType
-
     class ProjectileComponent {
+        + {static} ComponentMapper<ProjectileComponent> MAPPER
+        + Entity owner
         + float baseDamage
+        + float deceleration
+        + float minSpeed
     }
     Component <|.. ProjectileComponent
 
+    class ShooterComponent {
+        + {static} ComponentMapper<ShooterComponent> MAPPER
+        + float shotInterval
+        + float shotTimer
+        + float projectileSpeed
+        + float projectileDamage
+    }
+    Component <|.. ShooterComponent
+
     class InteractableComponent {
+        + {static} ComponentMapper<InteractableComponent> MAPPER
         + float range
+        + String promptText
+        + boolean singleUse
     }
     Component <|.. InteractableComponent
 
-    class TriggerComponent {
-        + List<TriggerListener> listeners
+    class HealOnInteractComponent {
+        + {static} ComponentMapper<HealOnInteractComponent> MAPPER
+        + float amount
     }
-    Component <|.. TriggerComponent
+    Component <|.. HealOnInteractComponent
+
+    class TriggerEventComponent {
+        + {static} ComponentMapper<TriggerEventComponent> MAPPER
+        + Entity sourcePlayer
+        + Entity targetInteractable
+        + ActionType action
+    }
+    Component <|.. TriggerEventComponent
+
+    enum "TriggerEventComponent.ActionType" as ActionType {
+        INTERACT
+    }
+    TriggerEventComponent --> ActionType
 }
 
 package "Systems (Pure Logic)" {
@@ -123,45 +171,125 @@ package "Systems (Pure Logic)" {
     IteratingSystem <|-- MovementSystem
 
     class InputSystem {
+        + {static} int INTERACT_KEY
         ' Family: all(PlayerComponent, VelocityComponent)
+        ' Also caches all(InteractableComponent, TransformComponent)
+        + void addedToEngine(Engine engine)
         # void processEntity(Entity entity, float deltaTime)
+        - void handleMovement(Entity player)
+        - void handleInteract(Entity player)
     }
     IteratingSystem <|-- InputSystem
 
+    interface CollisionListener {
+        + void onCollision(Entity entityA, Entity entityB)
+    }
+
     class CollisionSystem {
-        ' Family: all(TransformComponent, BoundsComponent)
-        # void processEntity(Entity entity, float deltaTime)
+        - SnapshotArray<CollisionListener> listeners
+        ' Movers: all(TransformComponent, VelocityComponent, CollisionComponent)
+        ' Collidables: all(TransformComponent, CollisionComponent)
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+        + void addCollisionListener(CollisionListener listener)
+        + void removeCollisionListener(CollisionListener listener)
+        - void notifyCollision(Entity entityA, Entity entityB)
+        - void handleEnemyPlayerContact(Entity enemy, Entity player)
+        - void resolveSolidCollision(TransformComponent mover, VelocityComponent velocity, TransformComponent solid)
     }
-    IteratingSystem <|-- CollisionSystem
+    EntitySystem <|-- CollisionSystem
+    CollisionSystem o-- CollisionListener
 
-    class CombatSystem {
+    class HealthSystem {
         ' Family: all(HealthComponent)
+        ' Ticks damage cooldowns, removes dead entities
         # void processEntity(Entity entity, float deltaTime)
     }
-    IteratingSystem <|-- CombatSystem
+    IteratingSystem <|-- HealthSystem
 
-    class EnemyAiSystem {
-        ' Family: all(EnemyComponent, TransformComponent, VelocityComponent)
+    class ProjectileSystem {
+        ' Family: all(ProjectileComponent, VelocityComponent)
+        ' Decelerates projectiles, despawns slow ones, handles hits
         # void processEntity(Entity entity, float deltaTime)
+        + void onCollision(Entity entityA, Entity entityB)
     }
-    IteratingSystem <|-- EnemyAiSystem
+    IteratingSystem <|-- ProjectileSystem
+    CollisionListener <|.. ProjectileSystem
+
+    class ShooterSystem {
+        ' Players: all(PlayerComponent, TransformComponent)
+        ' Shooters: all(ShooterComponent, TransformComponent)
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- ShooterSystem
+
+    class EnemySystem {
+        ' Players: all(PlayerComponent, TransformComponent)
+        ' Enemies: all(EnemyComponent, TransformComponent, VelocityComponent)
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- EnemySystem
 
     class InteractionSystem {
-        ' Family: all(InteractableComponent) or all(TriggerComponent)
+        ' Family: all(TriggerEventComponent)
         # void processEntity(Entity entity, float deltaTime)
+        # void handleInteract(TriggerEventComponent event)
     }
     IteratingSystem <|-- InteractionSystem
+
+    class EventCleanupSystem {
+        ' Priority: Integer.MAX_VALUE (always runs last)
+        ' Family: all(TriggerEventComponent)
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- EventCleanupSystem
 }
 
 package "Entities" {
     class EntityFactory {
-        + {static} Entity createPlayer(float x, float y, float speed, TextureRegion region)
+        + {static} float PLAYER_DAMAGE_COOLDOWN
+        + {static} EnemyStats statsFor(EnemyType type)
+        + {static} Entity createEnemy(EnemyType type, float startX, float startY)
+        + {static} Entity createPlayer(float x, float y)
+        + {static} Entity createBlock(float x, float y, float width, float height)
+        + {static} Entity createHealthPack(float x, float y, float healAmount)
+        + {static} Entity createProjectile(Entity owner, float centreX, float centreY, Vector2 velocity, float damage)
     }
+
+    enum EnemyType {
+        GOOSE
+        FAST_GOOSE
+        TANK_GOOSE
+        GRADIENT_GOOSE
+        LONG_BOI
+    }
+
+    class EnemyStats <<record>> {
+        + float size
+        + float health
+        + float speed
+        + float damage
+        + float knockback
+        + String texture
+    }
+
+    EntityFactory +-- EnemyType
+    EntityFactory +-- EnemyStats
     EntityFactory ..> Entity : creates
     EntityFactory ..> PlayerComponent : attaches
     EntityFactory ..> TransformComponent : attaches
     EntityFactory ..> VelocityComponent : attaches
     EntityFactory ..> TextureComponent : attaches
+    EntityFactory ..> CollisionComponent : attaches
+    EntityFactory ..> HealthComponent : attaches
+    EntityFactory ..> EnemyComponent : attaches
+    EntityFactory ..> InteractableComponent : attaches
+    EntityFactory ..> HealOnInteractComponent : attaches
+    EntityFactory ..> ProjectileComponent : attaches
+    EntityFactory ..> ShooterComponent : attaches
 }
 
 ' System to Component dependencies
@@ -173,16 +301,34 @@ MovementSystem ..> VelocityComponent : reads via MAPPER
 
 InputSystem ..> PlayerComponent : matches via Family
 InputSystem ..> VelocityComponent : writes via MAPPER
+InputSystem ..> InteractableComponent : reads via MAPPER
+InputSystem ..> TriggerEventComponent : creates event entity
 
-CollisionSystem ..> BoundsComponent : reads
-CollisionSystem ..> TransformComponent : reads
+CollisionSystem ..> CollisionComponent : reads via MAPPER
+CollisionSystem ..> TransformComponent : writes via MAPPER
+CollisionSystem ..> VelocityComponent : writes via MAPPER
+CollisionSystem ..> EnemyComponent : writes via MAPPER
+CollisionSystem ..> HealthComponent : writes via MAPPER
 
-CombatSystem ..> HealthComponent : writes
+HealthSystem ..> HealthComponent : writes via MAPPER
 
-EnemyAiSystem ..> EnemyComponent : reads
-EnemyAiSystem ..> VelocityComponent : writes
+ProjectileSystem ..> ProjectileComponent : reads via MAPPER
+ProjectileSystem ..> VelocityComponent : writes via MAPPER
+ProjectileSystem ..> HealthComponent : writes via MAPPER
 
-InteractionSystem ..> InteractableComponent : reads
-InteractionSystem ..> TriggerComponent : reads
+ShooterSystem ..> ShooterComponent : writes via MAPPER
+ShooterSystem ..> TransformComponent : reads via MAPPER
+ShooterSystem ..> EntityFactory : creates projectiles
+
+EnemySystem ..> EnemyComponent : writes via MAPPER
+EnemySystem ..> TransformComponent : reads via MAPPER
+EnemySystem ..> VelocityComponent : writes via MAPPER
+
+InteractionSystem ..> TriggerEventComponent : reads via MAPPER
+InteractionSystem ..> InteractableComponent : reads via MAPPER
+InteractionSystem ..> HealOnInteractComponent : reads via MAPPER
+InteractionSystem ..> HealthComponent : writes via MAPPER
+
+EventCleanupSystem ..> TriggerEventComponent : destroys event entity
 
 @enduml

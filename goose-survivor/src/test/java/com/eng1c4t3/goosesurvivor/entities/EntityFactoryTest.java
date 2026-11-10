@@ -1,50 +1,24 @@
 package com.eng1c4t3.goosesurvivor.entities;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.badlogic.ashley.core.Entity;
-import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
-import com.eng1c4t3.goosesurvivor.components.TextureComponent;
-import com.eng1c4t3.goosesurvivor.components.TransformComponent;
-import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.entities.EntityFactory.EnemyStats;
+import com.eng1c4t3.goosesurvivor.entities.EntityFactory.EnemyType;
 import org.junit.jupiter.api.Test;
 
 class EntityFactoryTest {
 
   @Test
-  void testCreatePlayerDefault() {
-    Entity player = EntityFactory.createPlayer(null);
-
-    assertNotNull(player);
-    assertNotNull(PlayerComponent.MAPPER.get(player));
-    assertNotNull(TransformComponent.MAPPER.get(player));
-    assertNotNull(VelocityComponent.MAPPER.get(player));
-    assertNotNull(TextureComponent.MAPPER.get(player));
-
-    TransformComponent transform = TransformComponent.MAPPER.get(player);
-    assertEquals(10f, transform.position.x);
-    assertEquals(10f, transform.position.y);
-
-    VelocityComponent velocity = VelocityComponent.MAPPER.get(player);
-    assertEquals(200f, velocity.maxSpeed);
-  }
-
-  @Test
-  void testCreatePlayerCustom() {
-    Entity player = EntityFactory.createPlayer(50f, 60f, 300f, null);
-
-    assertNotNull(player);
-    assertNotNull(PlayerComponent.MAPPER.get(player));
-    assertNotNull(TransformComponent.MAPPER.get(player));
-    assertNotNull(VelocityComponent.MAPPER.get(player));
-    assertNotNull(TextureComponent.MAPPER.get(player));
-
-    TransformComponent transform = TransformComponent.MAPPER.get(player);
-    assertEquals(50f, transform.position.x);
-    assertEquals(60f, transform.position.y);
-
-    VelocityComponent velocity = VelocityComponent.MAPPER.get(player);
-    assertEquals(300f, velocity.maxSpeed);
+  void testEveryEnemyTypeHasValidStats() {
+    for (EnemyType type : EnemyType.values()) {
+      EnemyStats stats = EntityFactory.statsFor(type);
+      assertNotNull(stats, type.name());
+      assertTrue(stats.size() > 0, type.name());
+      assertTrue(stats.health() > 0, type.name());
+      assertTrue(stats.speed() > 0, type.name());
+      assertTrue(stats.damage() > 0, type.name());
+      assertNotNull(stats.texture(), type.name());
+    }
   }
 }

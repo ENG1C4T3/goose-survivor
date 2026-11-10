@@ -55,8 +55,12 @@ public class WorldRenderer {
       TextureComponent texture = TextureComponent.MAPPER.get(entity);
 
       if (transform != null && texture != null) {
-        batch.draw(texture.region,
-            transform.position.x, transform.position.y);
+        batch.draw(
+            texture.region,
+            transform.position.x,
+            transform.position.y,
+            transform.position.width,
+            transform.position.height);
       }
     }
     batch.end();

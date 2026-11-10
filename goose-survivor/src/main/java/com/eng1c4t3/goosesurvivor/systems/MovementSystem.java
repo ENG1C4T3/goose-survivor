@@ -7,16 +7,12 @@ import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
 
 /**
- * Handles the movement of entities based on their velocity.
- *
- * @see TransformComponent
- * @see VelocityComponent
+ * Handles positional translation based on velocity.
  */
 public class MovementSystem extends IteratingSystem {
 
   /**
-   * Constructs a MovementSystem that processes entities with TransformComponent
-   * and VelocityComponent.
+   * Constructs a new MovementSystem.
    */
   public MovementSystem() {
     super(Family.all(TransformComponent.class, VelocityComponent.class).get());
@@ -25,8 +21,8 @@ public class MovementSystem extends IteratingSystem {
   /**
    * Updates the position of the entity based on its velocity.
    *
-   * @param entity The entity to process.
-   * @param deltaTime The time passed since the last frame.
+   * @param entity The current Entity being processed
+   * @param deltaTime The delta time between the last and current frame
    */
   @Override
   protected void processEntity(Entity entity, float deltaTime) {
