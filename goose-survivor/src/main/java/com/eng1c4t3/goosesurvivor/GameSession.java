@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Engine;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.Family;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
@@ -13,6 +14,8 @@ import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
+import com.eng1c4t3.goosesurvivor.systems.ProjectileSystem;
+import com.eng1c4t3.goosesurvivor.systems.ShooterSystem;
 
 /**
  * Manages a playthrough's world, timer, game state and gameplay updates.
@@ -42,23 +45,50 @@ public class GameSession {
     enemySystem.priority = 2;
 
     MovementSystem movementSystem = new MovementSystem();
-    movementSystem.priority = 3;
+    movementSystem.priority = 4;
 
     CollisionSystem collisionSystem = new CollisionSystem();
-    collisionSystem.priority = 4;
+    collisionSystem.priority = 5;
+
+    ProjectileSystem projectileSystem = new ProjectileSystem();
+    projectileSystem.priority = 6;
 
     HealthSystem healthSystem = new HealthSystem();
-    healthSystem.priority = 5;
+    healthSystem.priority = 7;
 
     engine.addSystem(inputSystem);
     engine.addSystem(interactionSystem);
     engine.addSystem(enemySystem);
     engine.addSystem(movementSystem);
     engine.addSystem(collisionSystem);
+    engine.addSystem(projectileSystem);
     engine.addSystem(healthSystem);
     engine.addSystem(new EventCleanupSystem());
 
+    collisionSystem.addCollisionListener(projectileSystem);
+
     registerPlayerDeathListener();
+  }
+
+  /**
+   * Enables shooting using a projectile texture loaded by the screen.
+   *
+   * @param projectileRegion The texture region for projectile sprites.
+   * @throws IllegalArgumentException if the texture region is null.
+   * @throws IllegalStateException if shooting has already been configured.
+   */
+  public void configureShooting(TextureRegion projectileRegion) {
+    if (projectileRegion == null) {
+      throw new IllegalArgumentException(
+          "Projectile texture must not be null");
+    }
+    if (engine.getSystem(ShooterSystem.class) != null) {
+      throw new IllegalStateException("Shooting has already been configured");
+    }
+
+    ShooterSystem shooterSystem = new ShooterSystem(projectileRegion);
+    shooterSystem.priority = 3;
+    engine.addSystem(shooterSystem);
   }
 
   public GameWorld getWorld() {

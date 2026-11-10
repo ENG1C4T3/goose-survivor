@@ -51,6 +51,9 @@ public class GameScreen extends ScreenAdapter {
     textureManager.loadTextures();
     textureManager.finishLoading();
 
+    session.configureShooting(
+        textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE));
+
     renderer = new WorldRenderer(batch, camera);
     populateWorld();
   }

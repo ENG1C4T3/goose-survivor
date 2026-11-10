@@ -12,6 +12,7 @@ import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
 import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
+import com.eng1c4t3.goosesurvivor.components.ProjectileComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
 
@@ -76,6 +77,8 @@ public class CollisionSystem extends EntitySystem {
       VelocityComponent velocity = VelocityComponent.MAPPER.get(mover);
 
       boolean moverIsPlayer = PlayerComponent.MAPPER.has(mover);
+      // Projectiles are never pushed out of what they hit; ProjectileSystem handles the hit
+      boolean moverIsProjectile = ProjectileComponent.MAPPER.has(mover);
 
       for (int j = 0; j < collidableEntities.size(); ++j) {
         Entity other = collidableEntities.get(j);
@@ -101,10 +104,12 @@ public class CollisionSystem extends EntitySystem {
             otherTransform.position.width, otherTransform.position.height);
 
         if (rectA.overlaps(rectB)) {
-          if (EnemyComponent.MAPPER.has(mover) && PlayerComponent.MAPPER.has(other)) {
-            handleEnemyPlayerContact(mover, other);
-          } else if (otherCollision.type == CollisionComponent.Type.SOLID) {
-            resolveSolidCollision(transform, velocity, otherTransform);
+          if (!moverIsProjectile) {
+            if (EnemyComponent.MAPPER.has(mover) && PlayerComponent.MAPPER.has(other)) {
+              handleEnemyPlayerContact(mover, other);
+            } else if (otherCollision.type == CollisionComponent.Type.SOLID) {
+              resolveSolidCollision(transform, velocity, otherTransform);
+            }
           }
           notifyCollision(mover, other);
         }
