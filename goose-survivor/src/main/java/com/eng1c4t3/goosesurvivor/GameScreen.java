@@ -51,11 +51,44 @@ public class GameScreen extends ScreenAdapter {
     textureManager.loadTextures();
     textureManager.finishLoading();
 
+    session.configureShooting(
+        textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE));
+
     renderer = new WorldRenderer(batch, camera);
-    session.getWorld().addEntity(
-        (EntityFactory.createPlayer(
-            textureManager.getTextureRegion(
-                TextureManager.PLAYER_TEXTURE))));
+    populateWorld();
+  }
+
+  /**
+   * Populates the new session with initial gameplay entities.
+   */
+  private void populateWorld() {
+    GameWorld world = session.getWorld();
+
+    world.addEntity(EntityFactory.createPlayer(255f, 255f,
+        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
+
+    world.addEntity(EntityFactory.createBlock(100f, 100f, 50f, 50f,
+        textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
+
+    world.addEntity(EntityFactory.createHealthPack(300f, 200f, 25f,
+        textureManager.getTextureRegion(TextureManager.HEALTH_PACK_TEXTURE)));
+
+    addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700f, 350f);
+    addEnemy(EntityFactory.EnemyType.LONG_BOI, 400f, 400f);
+  }
+
+  /**
+   * Adds a enemy using the textrue associated with enemy's type.
+   *
+   * @param type the type of enemy
+   * @param x    the initial x-coordinate
+   * @param y    the initial y-coordinate
+   */
+  private void addEnemy(EntityFactory.EnemyType type, float x, float y) {
+    EntityFactory.EnemyStats stats = EntityFactory.statsFor(type);
+
+    session.getWorld().addEntity(EntityFactory.createEnemy(type, x, y,
+        textureManager.getTextureRegion(stats.texture())));
   }
 
   /**
