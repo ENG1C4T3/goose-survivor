@@ -18,7 +18,9 @@ import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
+import com.eng1c4t3.goosesurvivor.systems.ProjectileSystem;
 import com.eng1c4t3.goosesurvivor.systems.RenderSystem;
+import com.eng1c4t3.goosesurvivor.systems.ShooterSystem;
 
 /**
  * Represents the main game class.
@@ -76,10 +78,15 @@ public class GooseSurvivor extends ApplicationAdapter {
     // Must come after InputSystem, which creates the trigger events it handles
     engine.addSystem(new InteractionSystem());
     engine.addSystem(new MovementSystem());
-    engine.addSystem(new CollisionSystem());
+    CollisionSystem collisionSystem = new CollisionSystem();
+    engine.addSystem(collisionSystem);
+    ProjectileSystem projectileSystem = new ProjectileSystem();
+    engine.addSystem(projectileSystem);
+    collisionSystem.addCollisionListener(projectileSystem);
     engine.addSystem(new RenderSystem(batch, camera));
     engine.addSystem(new HealthSystem());
     engine.addSystem(new EnemySystem());
+    engine.addSystem(new ShooterSystem());
     // Runs last regardless of order (highest priority value): destroys this frame's events
     engine.addSystem(new EventCleanupSystem());
   }
