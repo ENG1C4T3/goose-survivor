@@ -7,6 +7,7 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.SnapshotArray;
 import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
 import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
@@ -25,7 +26,10 @@ import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
  * <p>Resolved collision types include:
  * <ul>
  *   <li>SOLID: Handles solid collisions by halting movement and preventing overlap.</li>
+ *   <li>TRIGGER: Not resolved; the overlap is only reported to listeners.</li>
  * </ul>
+ *
+ * <p>Every overlap, of either type, is reported to the registered {@link CollisionListener}s.
  */
 public class CollisionSystem extends EntitySystem {
 
@@ -36,6 +40,9 @@ public class CollisionSystem extends EntitySystem {
   private final Rectangle rectA = new Rectangle();
   private final Rectangle rectB = new Rectangle();
   private final Vector2 knockbackDirection = new Vector2();
+
+  private final SnapshotArray<CollisionListener> listeners =
+      new SnapshotArray<>(true, 4, CollisionListener.class);
 
   /**
    * Caches all entities required for collision detection.
@@ -99,9 +106,44 @@ public class CollisionSystem extends EntitySystem {
           } else if (otherCollision.type == CollisionComponent.Type.SOLID) {
             resolveSolidCollision(transform, velocity, otherTransform);
           }
+          notifyCollision(mover, other);
         }
       }
     }
+  }
+
+  /**
+   * Registers a listener to be notified of every collision.
+   *
+   * @param listener The listener to add.
+   */
+  public void addCollisionListener(CollisionListener listener) {
+    listeners.add(listener);
+  }
+
+  /**
+   * Stops a listener from being notified of collisions.
+   *
+   * @param listener The listener to remove.
+   */
+  public void removeCollisionListener(CollisionListener listener) {
+    listeners.removeValue(listener, true);
+  }
+
+  /**
+   * Notifies every registered listener of a collision.
+   *
+   * <p>Listeners may safely add or remove listeners while being notified.
+   *
+   * @param entityA The moving entity.
+   * @param entityB The entity it overlaps.
+   */
+  private void notifyCollision(Entity entityA, Entity entityB) {
+    CollisionListener[] snapshot = listeners.begin();
+    for (int i = 0, n = listeners.size; i < n; ++i) {
+      snapshot[i].onCollision(entityA, entityB);
+    }
+    listeners.end();
   }
 
   /**
@@ -115,7 +157,6 @@ public class CollisionSystem extends EntitySystem {
    * @param player The player entity.
    */
   private void handleEnemyPlayerContact(Entity enemy, Entity player) {
-    EnemyComponent enemyComponent = EnemyComponent.MAPPER.get(enemy);
     TransformComponent enemyTransform = TransformComponent.MAPPER.get(enemy);
     VelocityComponent enemyVelocity = VelocityComponent.MAPPER.get(enemy);
     TransformComponent playerTransform = TransformComponent.MAPPER.get(player);
@@ -139,6 +180,7 @@ public class CollisionSystem extends EntitySystem {
     // Keep the enemy from overlapping the player this frame
     resolveSolidCollision(enemyTransform, enemyVelocity, playerTransform);
 
+    EnemyComponent enemyComponent = EnemyComponent.MAPPER.get(enemy);
     if (enemyComponent.isKnockedBack()) {
       return;
     }

@@ -1,5 +1,6 @@
 libgdx.png
 ph_goose.png
+ph_healthpack.png
 ph_longboi.png
 ph_player.png
 ph_projectile.png
