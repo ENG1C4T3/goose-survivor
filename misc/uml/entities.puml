@@ -108,10 +108,23 @@ package "Components (Pure Data)" {
     }
     Component <|.. EnemyComponent
 
-    class ProjectileComponent <<planned>> {
+    class ProjectileComponent {
+        + {static} ComponentMapper<ProjectileComponent> MAPPER
+        + Entity owner
         + float baseDamage
+        + float deceleration
+        + float minSpeed
     }
     Component <|.. ProjectileComponent
+
+    class ShooterComponent {
+        + {static} ComponentMapper<ShooterComponent> MAPPER
+        + float shotInterval
+        + float shotTimer
+        + float projectileSpeed
+        + float projectileDamage
+    }
+    Component <|.. ShooterComponent
 
     class InteractableComponent {
         + {static} ComponentMapper<InteractableComponent> MAPPER
@@ -194,11 +207,22 @@ package "Systems (Pure Logic)" {
     }
     IteratingSystem <|-- HealthSystem
 
-    class CombatSystem <<planned>> {
-        ' Family: all(HealthComponent)
+    class ProjectileSystem {
+        ' Family: all(ProjectileComponent, VelocityComponent)
+        ' Decelerates projectiles, despawns slow ones, handles hits
         # void processEntity(Entity entity, float deltaTime)
+        + void onCollision(Entity entityA, Entity entityB)
     }
-    IteratingSystem <|-- CombatSystem
+    IteratingSystem <|-- ProjectileSystem
+    CollisionListener <|.. ProjectileSystem
+
+    class ShooterSystem {
+        ' Players: all(PlayerComponent, TransformComponent)
+        ' Shooters: all(ShooterComponent, TransformComponent)
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+    }
+    EntitySystem <|-- ShooterSystem
 
     class EnemySystem {
         ' Players: all(PlayerComponent, TransformComponent)
@@ -232,6 +256,7 @@ package "Entities" {
         + {static} Entity createPlayer(float x, float y)
         + {static} Entity createBlock(float x, float y, float width, float height)
         + {static} Entity createHealthPack(float x, float y, float healAmount)
+        + {static} Entity createProjectile(Entity owner, float centreX, float centreY, Vector2 velocity, float damage)
     }
 
     enum EnemyType {
@@ -263,6 +288,8 @@ package "Entities" {
     EntityFactory ..> EnemyComponent : attaches
     EntityFactory ..> InteractableComponent : attaches
     EntityFactory ..> HealOnInteractComponent : attaches
+    EntityFactory ..> ProjectileComponent : attaches
+    EntityFactory ..> ShooterComponent : attaches
 }
 
 ' System to Component dependencies
@@ -285,8 +312,13 @@ CollisionSystem ..> HealthComponent : writes via MAPPER
 
 HealthSystem ..> HealthComponent : writes via MAPPER
 
-CombatSystem ..> HealthComponent : writes
-CombatSystem ..> ProjectileComponent : reads
+ProjectileSystem ..> ProjectileComponent : reads via MAPPER
+ProjectileSystem ..> VelocityComponent : writes via MAPPER
+ProjectileSystem ..> HealthComponent : writes via MAPPER
+
+ShooterSystem ..> ShooterComponent : writes via MAPPER
+ShooterSystem ..> TransformComponent : reads via MAPPER
+ShooterSystem ..> EntityFactory : creates projectiles
 
 EnemySystem ..> EnemyComponent : writes via MAPPER
 EnemySystem ..> TransformComponent : reads via MAPPER

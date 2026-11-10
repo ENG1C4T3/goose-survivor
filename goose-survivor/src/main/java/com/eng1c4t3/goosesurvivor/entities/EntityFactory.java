@@ -1,6 +1,7 @@
 package com.eng1c4t3.goosesurvivor.entities;
 
 import com.badlogic.ashley.core.Entity;
+import com.badlogic.gdx.math.Vector2;
 import com.eng1c4t3.goosesurvivor.GooseSurvivor;
 import com.eng1c4t3.goosesurvivor.TextureManager;
 import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
@@ -9,6 +10,8 @@ import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
+import com.eng1c4t3.goosesurvivor.components.ProjectileComponent;
+import com.eng1c4t3.goosesurvivor.components.ShooterComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
@@ -20,6 +23,20 @@ public final class EntityFactory {
 
   /** Seconds the player is invulnerable for after being hit. */
   public static final float PLAYER_DAMAGE_COOLDOWN = 0.5f;
+
+  /** Width and height of a projectile. */
+  public static final float PROJECTILE_SIZE = 16f;
+  /** Speed a projectile loses per second. */
+  public static final float PROJECTILE_DECELERATION = 100f;
+  /** Speed below which a projectile despawns. */
+  public static final float PROJECTILE_MIN_SPEED = 50f;
+
+  /** Seconds between Long Boi's shots at the player. */
+  public static final float LONG_BOI_SHOT_INTERVAL = 20f;
+  /** Initial speed of Long Boi's projectiles. */
+  public static final float LONG_BOI_PROJECTILE_SPEED = 300f;
+  /** Damage dealt by Long Boi's projectiles. */
+  public static final float LONG_BOI_PROJECTILE_DAMAGE = 15f;
 
   /**
    * The kinds of enemy that can be created.
@@ -87,7 +104,41 @@ public final class EntityFactory {
     enemy.add(new TextureComponent(
         GooseSurvivor.textureManager.getTextureRegion(stats.texture())));
     enemy.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    if (type == EnemyType.LONG_BOI) {
+      enemy.add(new ShooterComponent(
+          LONG_BOI_SHOT_INTERVAL, LONG_BOI_PROJECTILE_SPEED, LONG_BOI_PROJECTILE_DAMAGE));
+    }
     return enemy;
+  }
+
+  /**
+   * Creates a projectile centred on the given point.
+   *
+   * <p>The projectile is a trigger, so it never pushes other entities around; the
+   * {@link com.eng1c4t3.goosesurvivor.systems.ProjectileSystem} decides what it does on a hit.
+   *
+   * @param owner The entity that fired the projectile; it is never hit by it.
+   * @param centreX The x-coordinate of the projectile's centre.
+   * @param centreY The y-coordinate of the projectile's centre.
+   * @param velocity The initial velocity of the projectile (copied).
+   * @param damage The damage dealt to whatever the projectile hits.
+   *
+   * @return A newly constructed projectile {@link Entity}.
+   */
+  public static Entity createProjectile(Entity owner, float centreX, float centreY,
+                                        Vector2 velocity, float damage) {
+    Entity projectile = new Entity();
+    projectile.add(new TransformComponent(centreX - PROJECTILE_SIZE / 2,
+        centreY - PROJECTILE_SIZE / 2, PROJECTILE_SIZE, PROJECTILE_SIZE));
+    VelocityComponent velocityComponent = new VelocityComponent(velocity.len());
+    velocityComponent.velocity.set(velocity);
+    projectile.add(velocityComponent);
+    projectile.add(new ProjectileComponent(
+        owner, damage, PROJECTILE_DECELERATION, PROJECTILE_MIN_SPEED));
+    projectile.add(new CollisionComponent(CollisionComponent.Type.TRIGGER));
+    projectile.add(new TextureComponent(
+        GooseSurvivor.textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE)));
+    return projectile;
   }
 
   /**
