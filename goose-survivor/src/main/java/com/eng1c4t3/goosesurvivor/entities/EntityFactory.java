@@ -8,6 +8,7 @@ import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
 import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
 import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
+import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.ProjectileComponent;
@@ -205,5 +206,24 @@ public final class EntityFactory {
     healthPack.add(new InteractableComponent(48f, "Press E to heal", true));
     healthPack.add(new HealOnInteractComponent(healAmount));
     return healthPack;
+  }
+
+  /**
+   * Creates an interactable statue that can start the Long Boi event.
+   *
+   * @param x      The initial x-coordinate.
+   * @param y      The initial y-coordinate.
+   * @param region The statue's texture region.
+   * @return The new statue entity.
+   */
+  public static Entity createLongBoiStatue(float x, float y, TextureRegion region) {
+    Entity statue = new Entity();
+    statue.add(new TransformComponent(x, y, 32f, 32f));
+    statue.add(new TextureComponent(region));
+    statue.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    statue.add(new InteractableComponent(64f, "Press E to awaken Long Boi", false));
+    statue.add(new HiddenEventComponent(
+        HiddenEventComponent.EventType.LONG_BOI_STATUE));
+    return statue;
   }
 }

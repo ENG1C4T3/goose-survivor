@@ -54,6 +54,9 @@ public class GameScreen extends ScreenAdapter {
     session.configureShooting(
         textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE));
 
+    session.configureHiddenEvents(
+        textureManager.getTextureRegion(TextureManager.LONG_BOI_TEXTURE));
+
     renderer = new WorldRenderer(batch, camera);
     populateWorld();
   }
@@ -74,7 +77,10 @@ public class GameScreen extends ScreenAdapter {
         textureManager.getTextureRegion(TextureManager.HEALTH_PACK_TEXTURE)));
 
     addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700f, 350f);
-    addEnemy(EntityFactory.EnemyType.LONG_BOI, 400f, 400f);
+
+    world.addEntity(EntityFactory.createLongBoiStatue(
+        400f, 300f,
+        textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
   }
 
   /**

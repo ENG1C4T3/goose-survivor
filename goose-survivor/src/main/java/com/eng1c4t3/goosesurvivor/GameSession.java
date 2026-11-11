@@ -7,10 +7,13 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
+import com.eng1c4t3.goosesurvivor.components.TransformComponent;
+import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
 import com.eng1c4t3.goosesurvivor.systems.EnemySystem;
 import com.eng1c4t3.goosesurvivor.systems.EventCleanupSystem;
 import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
+import com.eng1c4t3.goosesurvivor.systems.HiddenEventSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
@@ -24,6 +27,7 @@ public class GameSession {
   private static final float TIME_LIMIT = 300f;
   private SessionState gameState = SessionState.RUNNING;
   private float elapsedTime = 0f;
+  private final SessionStats stats = new SessionStats();
 
   private final Engine engine;
   private final GameWorld world;
@@ -75,7 +79,7 @@ public class GameSession {
    *
    * @param projectileRegion The texture region for projectile sprites.
    * @throws IllegalArgumentException if the texture region is null.
-   * @throws IllegalStateException if shooting has already been configured.
+   * @throws IllegalStateException    if shooting has already been configured.
    */
   public void configureShooting(TextureRegion projectileRegion) {
     if (projectileRegion == null) {
@@ -91,8 +95,41 @@ public class GameSession {
     engine.addSystem(shooterSystem);
   }
 
+  /**
+   * Enables hidden events using the supplied Long Boi texture.
+   *
+   * @param bossRegion The texture region for Long Boi.
+   * @throws IllegalStateException if hidden events are already configured
+   */
+  public void configureHiddenEvents(TextureRegion bossRegion) {
+    if (engine.getSystem(HiddenEventSystem.class) != null) {
+      throw new IllegalStateException("Hidden events have already been configured");
+    }
+
+    HiddenEventSystem hiddenEventSystem = new HiddenEventSystem(stats, statue -> {
+      TransformComponent transform = TransformComponent.MAPPER.get(statue);
+      return EntityFactory.createEnemy(
+          EntityFactory.EnemyType.LONG_BOI,
+          transform.position.x + transform.position.width + 16f,
+          transform.position.y,
+          bossRegion);
+    });
+
+    hiddenEventSystem.priority = 8;
+    engine.addSystem(hiddenEventSystem);
+  }
+
   public GameWorld getWorld() {
     return world;
+  }
+
+  /**
+   * Return this session's gameplay statistics.
+   *
+   * @return The statistics for this playthrough
+   */
+  public SessionStats getStats() {
+    return stats;
   }
 
   public SessionState getState() {
