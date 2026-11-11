@@ -64,8 +64,15 @@ package "Components (Pure Data)" {
         + {static} ComponentMapper<VelocityComponent> MAPPER
         + Vector2 velocity
         + float maxSpeed
+        + float speedMultiplier
+        + float effectiveMaxSpeed()
     }
     Component <|.. VelocityComponent
+    note bottom of VelocityComponent
+        maxSpeed = permanent base speed (upgrades).
+        speedMultiplier = temporary effects (boosts).
+        Movement uses effectiveMaxSpeed().
+    end note
 
     class PlayerComponent {
         + {static} ComponentMapper<PlayerComponent> MAPPER
@@ -180,7 +187,6 @@ package "Components (Pure Data)" {
 
     class SpeedBoostComponent {
         + {static} ComponentMapper<SpeedBoostComponent> MAPPER
-        + float baseSpeed
         + float multiplier
         + float remainingTime
     }
@@ -434,7 +440,7 @@ InventorySystem ..> ItemEffect : applies
 
 SpeedBoostEffect ..> SpeedBoostComponent : adds
 SpeedBoostSystem ..> SpeedBoostComponent : ticks / removes
-SpeedBoostSystem ..> VelocityComponent : restores maxSpeed
+SpeedBoostSystem ..> VelocityComponent : resets speedMultiplier
 
 EventCleanupSystem ..> TriggerEventComponent : destroys event entity
 EventCleanupSystem ..> UseItemEventComponent : destroys event entity

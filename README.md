@@ -68,6 +68,8 @@ The player starts with an empty inventory. The demo stage has a Coffee and a Tru
 
 Available item effects (in `items/`): `HealEffect(amount)`, `KnockbackEffect(radius, distance)`, `AreaDamageEffect(radius, damage)` and `SpeedBoostEffect(multiplier, seconds)`. Speed boosts don't stack; using one while boosted refreshes the timer.
 
+Speed is split in `VelocityComponent`: `maxSpeed` is the permanent base speed (change it for upgrades and rewards) and `speedMultiplier` is for temporary effects. Movement uses `effectiveMaxSpeed()` (base × multiplier), so a boost ending never undoes a permanent upgrade.
+
 ## Timeline
 
 <details>

@@ -9,8 +9,11 @@ import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
  * Multiplies the user's max speed for a number of seconds.
  *
  * <p>Boosts do not stack: using a boost while already boosted refreshes the duration (to
- * whichever is longer) and applies the new multiplier, always based on the original speed.
- * The SpeedBoostSystem counts the boost down and restores the original speed.
+ * whichever is longer) and applies the new multiplier.
+ *
+ * <p>Only {@link VelocityComponent#speedMultiplier} is changed, never the base
+ * {@link VelocityComponent#maxSpeed}, so permanent speed upgrades gained during the boost are
+ * kept when it ends. The SpeedBoostSystem counts the boost down and resets the multiplier.
  */
 public class SpeedBoostEffect implements ItemEffect {
 
@@ -43,12 +46,12 @@ public class SpeedBoostEffect implements ItemEffect {
 
     SpeedBoostComponent boost = SpeedBoostComponent.MAPPER.get(user);
     if (boost == null) {
-      boost = new SpeedBoostComponent(velocity.maxSpeed, multiplier, duration);
+      boost = new SpeedBoostComponent(multiplier, duration);
       user.add(boost);
     } else {
       boost.multiplier = multiplier;
       boost.remainingTime = Math.max(boost.remainingTime, duration);
     }
-    velocity.maxSpeed = boost.baseSpeed * boost.multiplier;
+    velocity.speedMultiplier = boost.multiplier;
   }
 }

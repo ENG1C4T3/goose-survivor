@@ -31,7 +31,7 @@ class SpeedBoostEffectTest {
   }
 
   private float maxSpeed() {
-    return VelocityComponent.MAPPER.get(user).maxSpeed;
+    return VelocityComponent.MAPPER.get(user).effectiveMaxSpeed();
   }
 
   @Test
@@ -67,6 +67,25 @@ class SpeedBoostEffectTest {
 
     engine.update(5.1f);
     assertEquals(100f, maxSpeed(), 1e-5f);
+  }
+
+  @Test
+  void testBoostLeavesBaseSpeedUntouched() {
+    new SpeedBoostEffect(2f, 5f).apply(user, engine);
+
+    assertEquals(100f, VelocityComponent.MAPPER.get(user).maxSpeed, 1e-5f);
+  }
+
+  @Test
+  void testPermanentUpgradeDuringBoostIsKeptAfterItEnds() {
+    new SpeedBoostEffect(2f, 5f).apply(user, engine);
+    engine.update(1f);
+
+    VelocityComponent.MAPPER.get(user).maxSpeed += 20f;
+    assertEquals(240f, maxSpeed(), 1e-5f);
+
+    engine.update(5f);
+    assertEquals(120f, maxSpeed(), 1e-5f);
   }
 
   @Test

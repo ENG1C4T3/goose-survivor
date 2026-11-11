@@ -49,10 +49,11 @@ package "Items (Definitions)" {
     }
     ItemEffect <|.. SpeedBoostEffect
     note bottom of SpeedBoostEffect
-        maxSpeed = baseSpeed * multiplier for
-        duration seconds. Doesn't stack: re-using
-        refreshes the timer (longest wins).
-        Not used by any item yet.
+        speedMultiplier = multiplier for duration
+        seconds; base maxSpeed is never touched, so
+        permanent upgrades survive the boost.
+        Doesn't stack: re-using refreshes the
+        timer (longest wins). Used by Energy drink.
     end note
 
     class KnockbackEffect {
@@ -159,7 +160,6 @@ package "Components (Pure Data)" {
 
     class SpeedBoostComponent {
         + {static} ComponentMapper<SpeedBoostComponent> MAPPER
-        + float baseSpeed
         + float multiplier
         + float remainingTime
     }
@@ -196,7 +196,7 @@ package "Systems (Pure Logic)" {
 
     class SpeedBoostSystem {
         ' Family: all(SpeedBoostComponent, VelocityComponent)
-        ' Ticks boosts; restores baseSpeed and removes the component when done
+        ' Ticks boosts; resets speedMultiplier and removes the component when done
         # void processEntity(Entity entity, float deltaTime)
     }
 
@@ -251,9 +251,9 @@ HealEffect ..> HealthComponent : heal()
 AreaDamageEffect ..> HealthComponent : takeDamage() on\nenemies in radius
 KnockbackEffect ..> EnemyComponent : starts knockbackTimer
 SpeedBoostEffect ..> SpeedBoostComponent : adds / refreshes
-SpeedBoostEffect ..> VelocityComponent : boosts maxSpeed
+SpeedBoostEffect ..> VelocityComponent : sets speedMultiplier
 SpeedBoostSystem ..> SpeedBoostComponent : ticks, removes when done
-SpeedBoostSystem ..> VelocityComponent : restores maxSpeed
+SpeedBoostSystem ..> VelocityComponent : resets speedMultiplier
 KnockbackEffect ..> VelocityComponent : sets push-away velocity
 
 ' Creation

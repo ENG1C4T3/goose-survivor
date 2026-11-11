@@ -135,7 +135,7 @@ public class InputSystem extends IteratingSystem {
 
     // Normalise the vector so diagonal movement isn't faster, then scale to max speed
     if (!vel.velocity.isZero()) {
-      vel.velocity.nor().scl(vel.maxSpeed);
+      vel.velocity.nor().scl(vel.effectiveMaxSpeed());
     }
   }
 
