@@ -64,8 +64,15 @@ package "Components (Pure Data)" {
         + {static} ComponentMapper<VelocityComponent> MAPPER
         + Vector2 velocity
         + float maxSpeed
+        + float speedMultiplier
+        + float effectiveMaxSpeed()
     }
     Component <|.. VelocityComponent
+    note bottom of VelocityComponent
+        maxSpeed = permanent base speed (upgrades).
+        speedMultiplier = temporary effects (boosts).
+        Movement uses effectiveMaxSpeed().
+    end note
 
     class PlayerComponent {
         + {static} ComponentMapper<PlayerComponent> MAPPER
@@ -152,7 +159,76 @@ package "Components (Pure Data)" {
         INTERACT
     }
     TriggerEventComponent --> ActionType
+
+    class InventoryComponent {
+        + {static} ComponentMapper<InventoryComponent> MAPPER
+        + {static} int DEFAULT_CAPACITY
+        + InventorySlot[] slots
+        + int capacity()
+        + int addItem(ItemType item)
+        + InventorySlot getSlot(int index)
+        + void clearSlot(int index)
+        + boolean isFull()
+    }
+    Component <|.. InventoryComponent
+
+    class ItemPickupComponent {
+        + {static} ComponentMapper<ItemPickupComponent> MAPPER
+        + ItemType item
+    }
+    Component <|.. ItemPickupComponent
+
+    class UseItemEventComponent {
+        + {static} ComponentMapper<UseItemEventComponent> MAPPER
+        + Entity user
+        + int slotIndex
+    }
+    Component <|.. UseItemEventComponent
+
+    class SpeedBoostComponent {
+        + {static} ComponentMapper<SpeedBoostComponent> MAPPER
+        + float multiplier
+        + float remainingTime
+    }
+    Component <|.. SpeedBoostComponent
 }
+
+package "Items" {
+    ' Full detail in inventory.puml
+    enum ItemType {
+        COFFEE
+        TRUMPET
+        + {static} int UNLIMITED_USES
+        + int maxUses
+        + float cooldown
+        + ItemEffect effect
+    }
+
+    class InventorySlot {
+        + ItemType item
+        + int usesRemaining
+        + float cooldownTimer
+        + boolean canUse()
+        + void consumeUse()
+        + void tick(float deltaTime)
+    }
+
+    interface ItemEffect {
+        + void apply(Entity user, Engine engine)
+    }
+    class HealEffect
+    class KnockbackEffect
+    class SpeedBoostEffect
+    ItemEffect <|.. SpeedBoostEffect
+    class AreaDamageEffect
+    ItemEffect <|.. HealEffect
+    ItemEffect <|.. KnockbackEffect
+    ItemEffect <|.. AreaDamageEffect
+    ItemType --> ItemEffect
+    InventorySlot --> ItemType
+}
+InventoryComponent o-- InventorySlot
+ItemPickupComponent --> ItemType
 
 package "Systems (Pure Logic)" {
     class RenderSystem {
@@ -172,12 +248,17 @@ package "Systems (Pure Logic)" {
 
     class InputSystem {
         + {static} int INTERACT_KEY
+        + {static} int MAX_ITEM_KEYS
         ' Family: all(PlayerComponent, VelocityComponent)
         ' Also caches all(InteractableComponent, TransformComponent)
+        + {static} int itemKey(int slotIndex)
+        + {static} Entity findNearestInteractable(Entity player, Iterable<Entity> candidates)
+        + {static} String interactPrompt(InteractableComponent interactable)
         + void addedToEngine(Engine engine)
         # void processEntity(Entity entity, float deltaTime)
         - void handleMovement(Entity player)
         - void handleInteract(Entity player)
+        - void handleItemKeys(Entity player)
     }
     IteratingSystem <|-- InputSystem
 
@@ -239,9 +320,26 @@ package "Systems (Pure Logic)" {
     }
     IteratingSystem <|-- InteractionSystem
 
+    class InventorySystem {
+        ' Inventories: all(InventoryComponent)
+        ' Events: all(UseItemEventComponent)
+        ' Ticks item cooldowns, uses items on request
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+        + boolean useItem(Entity user, int slotIndex)
+    }
+    EntitySystem <|-- InventorySystem
+
+    class SpeedBoostSystem {
+        ' Family: all(SpeedBoostComponent, VelocityComponent)
+        ' Ends timed speed boosts, restoring the original max speed
+        # void processEntity(Entity entity, float deltaTime)
+    }
+    IteratingSystem <|-- SpeedBoostSystem
+
     class EventCleanupSystem {
         ' Priority: Integer.MAX_VALUE (always runs last)
-        ' Family: all(TriggerEventComponent)
+        ' Family: one(TriggerEventComponent, UseItemEventComponent)
         + void addedToEngine(Engine engine)
         + void update(float deltaTime)
     }
@@ -257,6 +355,7 @@ package "Entities" {
         + {static} Entity createBlock(float x, float y, float width, float height)
         + {static} Entity createHealthPack(float x, float y, float healAmount)
         + {static} Entity createProjectile(Entity owner, float centreX, float centreY, Vector2 velocity, float damage)
+        + {static} Entity createItemPickup(ItemType item, float x, float y, TextureRegion region)
     }
 
     enum EnemyType {
@@ -290,6 +389,8 @@ package "Entities" {
     EntityFactory ..> HealOnInteractComponent : attaches
     EntityFactory ..> ProjectileComponent : attaches
     EntityFactory ..> ShooterComponent : attaches
+    EntityFactory ..> InventoryComponent : attaches
+    EntityFactory ..> ItemPickupComponent : attaches
 }
 
 ' System to Component dependencies
@@ -303,6 +404,8 @@ InputSystem ..> PlayerComponent : matches via Family
 InputSystem ..> VelocityComponent : writes via MAPPER
 InputSystem ..> InteractableComponent : reads via MAPPER
 InputSystem ..> TriggerEventComponent : creates event entity
+InputSystem ..> InventoryComponent : reads via MAPPER
+InputSystem ..> UseItemEventComponent : creates event entity
 
 CollisionSystem ..> CollisionComponent : reads via MAPPER
 CollisionSystem ..> TransformComponent : writes via MAPPER
@@ -328,7 +431,18 @@ InteractionSystem ..> TriggerEventComponent : reads via MAPPER
 InteractionSystem ..> InteractableComponent : reads via MAPPER
 InteractionSystem ..> HealOnInteractComponent : reads via MAPPER
 InteractionSystem ..> HealthComponent : writes via MAPPER
+InteractionSystem ..> ItemPickupComponent : reads via MAPPER
+InteractionSystem ..> InventoryComponent : writes via MAPPER
+
+InventorySystem ..> InventoryComponent : writes via MAPPER
+InventorySystem ..> UseItemEventComponent : reads via MAPPER
+InventorySystem ..> ItemEffect : applies
+
+SpeedBoostEffect ..> SpeedBoostComponent : adds
+SpeedBoostSystem ..> SpeedBoostComponent : ticks / removes
+SpeedBoostSystem ..> VelocityComponent : resets speedMultiplier
 
 EventCleanupSystem ..> TriggerEventComponent : destroys event entity
+EventCleanupSystem ..> UseItemEventComponent : destroys event entity
 
 @enduml

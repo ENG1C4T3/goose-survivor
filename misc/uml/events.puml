@@ -4,6 +4,7 @@ package "Components (Pure Data)" {
     class InteractableComponent {
         + float range
         + String promptText
+        ' Action only, e.g. "Pick up Coffee"; HUD shows "[E] " + promptText
         + boolean singleUse
     }
 
@@ -22,6 +23,16 @@ package "Components (Pure Data)" {
         INTERACT
     }
     TriggerEventComponent --> ActionType
+
+    class UseItemEventComponent {
+        + Entity user
+        + int slotIndex
+    }
+
+    class ItemPickupComponent {
+        ' Interaction effect
+        + ItemType item
+    }
 }
 
 package "Systems (Pure Logic)" {
@@ -32,6 +43,11 @@ package "Systems (Pure Logic)" {
 
     class InteractionSystem {
         ' Processes the event logic
+        + void update(float deltaTime)
+    }
+
+    class InventorySystem {
+        ' Uses items, ticks cooldowns
         + void update(float deltaTime)
     }
 
@@ -46,7 +62,12 @@ InputSystem .right.> TriggerEventComponent : 1. Detects keypress in range\nCreat
 InteractionSystem ..> TriggerEventComponent : 2. Reads Event Entity\nExecutes game logic
 EventCleanupSystem ..> TriggerEventComponent : 3. Destroys Event Entity\nat end of frame
 
-InputSystem ..> InteractableComponent : reads range
+InputSystem ..> InteractableComponent : reads range\nfindNearestInteractable()\n(also used by HUD prompt popup)
 InteractionSystem ..> InteractableComponent : reads singleUse
 InteractionSystem ..> HealOnInteractComponent : applies effect
+InteractionSystem ..> ItemPickupComponent : adds item to inventory
+
+InputSystem ..> UseItemEventComponent : 1. Detects key 1-9\nCreates Event Entity
+InventorySystem ..> UseItemEventComponent : 2. Uses item if ready
+EventCleanupSystem ..> UseItemEventComponent : 3. Destroys Event Entity
 @enduml

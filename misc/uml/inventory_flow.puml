@@ -1,0 +1,48 @@
+@startuml
+title Inventory: pickup and use flow (one frame each)
+
+actor Player
+participant InputSystem
+participant InteractionSystem
+participant InventorySystem
+participant "ItemType.effect\n(ItemEffect)" as Effect
+participant EventCleanupSystem
+collections Engine
+
+== Picking up an item (E near a pickup) ==
+Player -> InputSystem : press E
+InputSystem -> Engine : add event entity\n[TriggerEventComponent(INTERACT)]
+InteractionSystem -> Engine : read event
+alt target has ItemPickupComponent
+    InteractionSystem -> InteractionSystem : inventory.addItem(item)
+    alt slot free
+        InteractionSystem -> Engine : remove pickup (singleUse)
+    else inventory full / no inventory
+        InteractionSystem -> InteractionSystem : do nothing, pickup stays
+    end
+end
+EventCleanupSystem -> Engine : remove event entity
+
+== Using an item (key 1-9) ==
+Player -> InputSystem : press key N
+InputSystem -> Engine : add event entity\n[UseItemEventComponent(player, N-1)]
+InventorySystem -> InventorySystem : tick() every slot's cooldown
+InventorySystem -> Engine : read event
+InventorySystem -> InventorySystem : useItem(player, N-1)
+alt slot empty, on cooldown or depleted
+    InventorySystem -> InventorySystem : return false (nothing happens)
+else slot.canUse()
+    InventorySystem -> Effect : apply(player, engine)
+    InventorySystem -> InventorySystem : slot.consumeUse()\n(uses--, unless unlimited;\ncooldownTimer = item.cooldown)
+    opt slot.isDepleted()
+        InventorySystem -> InventorySystem : inventory.clearSlot(N-1)
+    end
+end
+EventCleanupSystem -> Engine : remove event entity
+
+note over InputSystem, EventCleanupSystem
+    System order (GameSession priorities):
+    0 Input, 1 Interaction, 2 Inventory, 3 SpeedBoost, 4 Enemy, 5 Shooter,
+    6 Movement, 7 Collision, 8 Projectile, 9 Health, MAX EventCleanup
+end note
+@enduml

@@ -14,10 +14,13 @@ import com.badlogic.gdx.Input;
 import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
+import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
+import com.eng1c4t3.goosesurvivor.components.ItemPickupComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.items.ItemType;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -216,6 +219,55 @@ class InteractionFlowTest {
 
     assertEquals(1, handled.size());
     assertEquals(125f, hpA.health + hpB.health, 1e-5f);
+  }
+
+  private Entity addItemPickup(float x, float y, ItemType item) {
+    Entity pickup = new Entity();
+    pickup.add(new TransformComponent(x, y, 24f, 24f));
+    pickup.add(new InteractableComponent(50f, "Press E to pick up", true));
+    pickup.add(new ItemPickupComponent(item));
+    engine.addEntity(pickup);
+    return pickup;
+  }
+
+  @Test
+  void testItemPickupAddsItemAndIsRemoved() {
+    Entity player = addPlayer(0, 0);
+    InventoryComponent inventory = new InventoryComponent(2);
+    player.add(inventory);
+    final Entity pickup = addItemPickup(40, 0, ItemType.COFFEE);
+    justPressedKeys.add(InputSystem.INTERACT_KEY);
+
+    engine.update(0.016f);
+
+    assertEquals(ItemType.COFFEE, inventory.getSlot(0).item);
+    assertFalse(engine.getEntities().contains(pickup, true));
+  }
+
+  @Test
+  void testItemPickupStaysWhenInventoryFull() {
+    Entity player = addPlayer(0, 0);
+    InventoryComponent inventory = new InventoryComponent(1);
+    inventory.addItem(ItemType.TRUMPET);
+    player.add(inventory);
+    final Entity pickup = addItemPickup(40, 0, ItemType.COFFEE);
+    justPressedKeys.add(InputSystem.INTERACT_KEY);
+
+    engine.update(0.016f);
+
+    assertEquals(ItemType.TRUMPET, inventory.getSlot(0).item);
+    assertTrue(engine.getEntities().contains(pickup, true));
+  }
+
+  @Test
+  void testItemPickupStaysWhenPlayerHasNoInventory() {
+    addPlayer(0, 0);
+    final Entity pickup = addItemPickup(40, 0, ItemType.COFFEE);
+    justPressedKeys.add(InputSystem.INTERACT_KEY);
+
+    engine.update(0.016f);
+
+    assertTrue(engine.getEntities().contains(pickup, true));
   }
 
   @Test
