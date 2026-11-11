@@ -1,0 +1,268 @@
+@startuml
+skinparam classAttributeIconSize 0
+title Inventory & Items Framework
+
+package "Items (Definitions)" {
+    enum ItemType {
+        COFFEE
+        TRUMPET
+        __
+        + {static} int UNLIMITED_USES = -1
+        + String displayName
+        + String shortName
+        + int maxUses
+        + float cooldown
+        + String texture
+        + ItemEffect effect
+        + boolean isUnlimited()
+    }
+    note right of ItemType
+        | Item    | Uses      | Cooldown | Effect                          |
+        | COFFEE  | 1         | 0.1s     | Heal to full                    |
+        | TRUMPET | unlimited | 90s      | Knock geese 150 away, 120 radius |
+        ----
+        Every item can be used. Uses are either a
+        positive number or UNLIMITED_USES. Every item
+        has its own cooldown.
+        To add an item, add a constant here.
+    end note
+
+    interface ItemEffect <<functional>> {
+        + void apply(Entity user, Engine engine)
+    }
+    note bottom of ItemEffect
+        Stateless and shared by every copy
+        of an item; per-copy state lives
+        in InventorySlot.
+    end note
+
+    class HealEffect {
+        + float amount
+        + void apply(Entity user, Engine engine)
+    }
+    ItemEffect <|.. HealEffect
+
+    class SpeedBoostEffect {
+        + float multiplier
+        + float duration
+        + void apply(Entity user, Engine engine)
+    }
+    ItemEffect <|.. SpeedBoostEffect
+    note bottom of SpeedBoostEffect
+        maxSpeed = baseSpeed * multiplier for
+        duration seconds. Doesn't stack: re-using
+        refreshes the timer (longest wins).
+        Not used by any item yet.
+    end note
+
+    class KnockbackEffect {
+        + float radius
+        + float distance
+        + void apply(Entity user, Engine engine)
+    }
+    ItemEffect <|.. KnockbackEffect
+    note bottom of KnockbackEffect
+        No damage. Starts each nearby enemy's
+        knockbackTimer and sets its velocity away
+        from the user (same mechanism as contact
+        knockback in CollisionSystem).
+    end note
+
+    class AreaDamageEffect {
+        + float radius
+        + float damage
+        + void apply(Entity user, Engine engine)
+    }
+    ItemEffect <|.. AreaDamageEffect
+    note bottom of AreaDamageEffect
+        Not used by any item yet;
+        available for future items.
+    end note
+
+    class InventorySlot {
+        + ItemType item
+        + int usesRemaining
+        + float cooldownTimer
+        + InventorySlot(ItemType item)
+        + boolean isUnlimited()
+        + boolean isOnCooldown()
+        + boolean isDepleted()
+        + boolean canUse()
+        + void consumeUse()
+        + void tick(float deltaTime)
+        + float cooldownFraction()
+    }
+    note bottom of InventorySlot
+        One copy of an item. Two copies of the
+        same item in different slots have
+        independent uses and cooldowns.
+    end note
+
+    ItemType --> ItemEffect : effect
+    InventorySlot --> ItemType : item
+}
+
+package "Components (Pure Data)" {
+    class InventoryComponent {
+        + {static} ComponentMapper<InventoryComponent> MAPPER
+        + {static} int DEFAULT_CAPACITY = 5
+        + InventorySlot[] slots
+        + InventoryComponent(int capacity)
+        + int capacity()
+        + int addItem(ItemType item)
+        + InventorySlot getSlot(int index)
+        + void clearSlot(int index)
+        + boolean isFull()
+    }
+    note right of InventoryComponent
+        Fixed-size hotbar; empty slot = null.
+        Depleted items leave their slot empty
+        instead of shifting later items, so
+        key bindings never move.
+    end note
+    InventoryComponent "1" o-- "0..capacity" InventorySlot
+
+    class ItemPickupComponent {
+        + {static} ComponentMapper<ItemPickupComponent> MAPPER
+        + ItemType item
+    }
+    ItemPickupComponent --> ItemType
+
+    class UseItemEventComponent {
+        + {static} ComponentMapper<UseItemEventComponent> MAPPER
+        + Entity user
+        + int slotIndex
+    }
+
+    class InteractableComponent {
+        + float range
+        + String promptText
+        + boolean singleUse
+    }
+
+    class HealthComponent {
+        + float health
+        + float maxHealth
+        + boolean takeDamage(float damage)
+        + void heal(float amount)
+    }
+
+    class EnemyComponent {
+        + float knockbackDuration
+        + float knockbackTimer
+        + boolean isKnockedBack()
+    }
+
+    class VelocityComponent {
+        + Vector2 velocity
+    }
+
+    class SpeedBoostComponent {
+        + {static} ComponentMapper<SpeedBoostComponent> MAPPER
+        + float baseSpeed
+        + float multiplier
+        + float remainingTime
+    }
+
+    class TriggerEventComponent {
+        + Entity sourcePlayer
+        + Entity targetInteractable
+        + ActionType action
+    }
+}
+
+package "Systems (Pure Logic)" {
+    class InputSystem {
+        + {static} int INTERACT_KEY
+        + {static} int MAX_ITEM_KEYS = 9
+        + {static} int itemKey(int slotIndex)
+        + {static} Entity findNearestInteractable(Entity player, Iterable<Entity> candidates)
+        + {static} String interactPrompt(InteractableComponent interactable)
+        - void handleItemKeys(Entity player)
+        - void handleInteract(Entity player)
+    }
+
+    class InteractionSystem {
+        # void handleInteract(TriggerEventComponent event)
+    }
+
+    class InventorySystem {
+        ' Inventories: all(InventoryComponent)
+        ' Events: all(UseItemEventComponent)
+        + void addedToEngine(Engine engine)
+        + void update(float deltaTime)
+        + boolean useItem(Entity user, int slotIndex)
+    }
+
+    class SpeedBoostSystem {
+        ' Family: all(SpeedBoostComponent, VelocityComponent)
+        ' Ticks boosts; restores baseSpeed and removes the component when done
+        # void processEntity(Entity entity, float deltaTime)
+    }
+
+    class EventCleanupSystem {
+        ' Family: one(TriggerEventComponent, UseItemEventComponent)
+        + void update(float deltaTime)
+    }
+}
+
+package "Entities" {
+    class EntityFactory {
+        + {static} Entity createPlayer(float x, float y, TextureRegion region)
+        + {static} Entity createItemPickup(ItemType item, float x, float y, TextureRegion region)
+    }
+}
+
+package "UI (Temporary)" {
+    class InventoryHud {
+        - ShapeRenderer shapes
+        - BitmapFont font
+        + InventoryHud(SpriteBatch batch, OrthographicCamera camera, float worldWidth, float worldHeight)
+        - Rectangle promptBox
+        + void render(GameSession session)
+        + void dispose()
+        - void layoutPromptBox(Entity target, String prompt)
+        - void drawPromptBox()
+        - void drawPromptText(String prompt)
+    }
+    note bottom of InventoryHud
+        Debug HUD: HP, hotbar (key, name,
+        uses, cooldown overlay + seconds),
+        labels above pickups, pause banner, and
+        an interact popup ("[E] Pick up Coffee")
+        above the interactable in range.
+    end note
+}
+
+' Use flow
+InputSystem ..> UseItemEventComponent : 1. key 1-9 pressed\ncreates event entity
+InventorySystem ..> UseItemEventComponent : 2. reads event
+InventorySystem ..> InventoryComponent : ticks cooldowns,\nconsumes use,\nclears depleted slot
+InventorySystem ..> ItemEffect : applies effect
+EventCleanupSystem ..> UseItemEventComponent : 3. destroys event
+
+' Pickup flow
+InputSystem ..> TriggerEventComponent : E pressed near pickup
+InteractionSystem ..> ItemPickupComponent : reads item
+InteractionSystem ..> InventoryComponent : addItem()\n(pickup stays if full)
+
+' Effects
+HealEffect ..> HealthComponent : heal()
+AreaDamageEffect ..> HealthComponent : takeDamage() on\nenemies in radius
+KnockbackEffect ..> EnemyComponent : starts knockbackTimer
+SpeedBoostEffect ..> SpeedBoostComponent : adds / refreshes
+SpeedBoostEffect ..> VelocityComponent : boosts maxSpeed
+SpeedBoostSystem ..> SpeedBoostComponent : ticks, removes when done
+SpeedBoostSystem ..> VelocityComponent : restores maxSpeed
+KnockbackEffect ..> VelocityComponent : sets push-away velocity
+
+' Creation
+EntityFactory ..> InventoryComponent : attaches to player
+EntityFactory ..> ItemPickupComponent : attaches
+EntityFactory ..> InteractableComponent : attaches (singleUse)
+
+InventoryHud ..> InventoryComponent : reads
+InventoryHud ..> ItemPickupComponent : reads
+InventoryHud ..> InputSystem : findNearestInteractable()\ninteractPrompt()\n(same target as E)
+InventoryHud ..> InteractableComponent : reads promptText
+@enduml

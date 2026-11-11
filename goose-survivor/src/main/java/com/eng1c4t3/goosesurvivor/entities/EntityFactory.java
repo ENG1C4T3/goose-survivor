@@ -9,12 +9,15 @@ import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
 import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
+import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
+import com.eng1c4t3.goosesurvivor.components.ItemPickupComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.ProjectileComponent;
 import com.eng1c4t3.goosesurvivor.components.ShooterComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.items.ItemType;
 
 /**
  * Factory for creating game entities with configured components.
@@ -161,6 +164,7 @@ public final class EntityFactory {
     player.add(new VelocityComponent(100f));
     player.add(new TextureComponent(region));
     player.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    player.add(new InventoryComponent(InventoryComponent.DEFAULT_CAPACITY));
     return player;
   }
 
@@ -202,8 +206,30 @@ public final class EntityFactory {
     Entity healthPack = new Entity();
     healthPack.add(new TransformComponent(x, y, 24f, 24f));
     healthPack.add(new TextureComponent(region));
-    healthPack.add(new InteractableComponent(48f, "Press E to heal", true));
+    healthPack.add(new InteractableComponent(48f, "Heal", true));
     healthPack.add(new HealOnInteractComponent(healAmount));
     return healthPack;
+  }
+
+  /**
+   * Creates a single-use pickup that adds an item to the player's inventory when they interact
+   * with it. If the player's inventory is full the pickup stays put.
+   *
+   * <p>The pickup has no collision, so the player can walk over it.
+   *
+   * @param item   The item given to the player.
+   * @param x      The x-coordinate.
+   * @param y      The y-coordinate.
+   * @param region The texture region for entity sprite
+   *
+   * @return A newly constructed item pickup {@link Entity}.
+   */
+  public static Entity createItemPickup(ItemType item, float x, float y, TextureRegion region) {
+    Entity pickup = new Entity();
+    pickup.add(new TransformComponent(x, y, 24f, 24f));
+    pickup.add(new TextureComponent(region));
+    pickup.add(new InteractableComponent(48f, "Pick up " + item.displayName, true));
+    pickup.add(new ItemPickupComponent(item));
+    return pickup;
   }
 }

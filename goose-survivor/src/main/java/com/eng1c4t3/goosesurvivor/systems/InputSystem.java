@@ -9,26 +9,47 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
+import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
+import com.eng1c4t3.goosesurvivor.components.UseItemEventComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
 
 /**
  * Handles player input: updates the player's velocity from the movement keys, and raises a
- * trigger event when the interact key is pressed within range of an interactable.
+ * trigger event when the interact key is pressed within range of an interactable, and raises a
+ * use item event when a hotbar key (1-9) is pressed.
  *
  * @see PlayerComponent
  * @see VelocityComponent
  * @see InteractableComponent
  * @see TriggerEventComponent
+ * @see UseItemEventComponent
  */
 public class InputSystem extends IteratingSystem {
 
   /** The key that interacts with the nearest interactable in range. */
   public static final int INTERACT_KEY = Input.Keys.E;
 
+  /** Number of hotbar slots that have a key (1 to 9). */
+  public static final int MAX_ITEM_KEYS = 9;
+
   private ImmutableArray<Entity> interactables;
+
+  /**
+   * Returns the key that uses the item in an inventory slot.
+   *
+   * @param slotIndex The slot index, from 0 to {@link #MAX_ITEM_KEYS} - 1.
+   * @return The key code: 1 for slot 0, 2 for slot 1, and so on.
+   * @throws IllegalArgumentException if the slot has no key.
+   */
+  public static int itemKey(int slotIndex) {
+    if (slotIndex < 0 || slotIndex >= MAX_ITEM_KEYS) {
+      throw new IllegalArgumentException("Slot " + slotIndex + " has no key");
+    }
+    return Input.Keys.NUM_1 + slotIndex;
+  }
 
   /**
    * Constructs an InputSystem that processes entities with PlayerComponent and VelocityComponent.
@@ -62,6 +83,28 @@ public class InputSystem extends IteratingSystem {
     if (Gdx.input.isKeyJustPressed(INTERACT_KEY)) {
       handleInteract(entity);
     }
+    handleItemKeys(entity);
+  }
+
+  /**
+   * Creates a use item event for each hotbar key pressed this frame. Whether the item is
+   * actually used (it might be empty or cooling down) is decided by {@link InventorySystem}.
+   *
+   * @param player The player entity.
+   */
+  private void handleItemKeys(Entity player) {
+    InventoryComponent inventory = InventoryComponent.MAPPER.get(player);
+    if (inventory == null) {
+      return;
+    }
+    int keyed = Math.min(inventory.capacity(), MAX_ITEM_KEYS);
+    for (int i = 0; i < keyed; ++i) {
+      if (Gdx.input.isKeyJustPressed(itemKey(i))) {
+        Entity event = new Entity();
+        event.add(new UseItemEventComponent(player, i));
+        getEngine().addEntity(event);
+      }
+    }
   }
 
   /**
@@ -90,7 +133,7 @@ public class InputSystem extends IteratingSystem {
       vel.velocity.x += 1;
     }
 
-    // Normalize the vector so diagonal movement isn't faster, then scale to max speed
+    // Normalise the vector so diagonal movement isn't faster, then scale to max speed
     if (!vel.velocity.isZero()) {
       vel.velocity.nor().scl(vel.maxSpeed);
     }
@@ -103,31 +146,61 @@ public class InputSystem extends IteratingSystem {
    * @param player The player entity.
    */
   private void handleInteract(Entity player) {
-    TransformComponent playerTransform = TransformComponent.MAPPER.get(player);
-    if (playerTransform == null) {
-      return;
-    }
-
-    Entity nearest = null;
-    float nearestDist2 = Float.MAX_VALUE;
-    for (int i = 0; i < interactables.size(); ++i) {
-      Entity candidate = interactables.get(i);
-      float range = InteractableComponent.MAPPER.get(candidate).range;
-      float dist2 = centreDistance2(playerTransform.position,
-          TransformComponent.MAPPER.get(candidate).position);
-
-      if (dist2 <= range * range && dist2 < nearestDist2) {
-        nearest = candidate;
-        nearestDist2 = dist2;
-      }
-    }
-
+    Entity nearest = findNearestInteractable(player, interactables);
     if (nearest != null) {
       Entity event = new Entity();
       event.add(new TriggerEventComponent(
           player, nearest, TriggerEventComponent.ActionType.INTERACT));
       getEngine().addEntity(event);
     }
+  }
+
+  /**
+   * Returns the interactable that pressing the interact key would target: the one nearest to
+   * the player whose range the player is within.
+   *
+   * <p>Shared with the HUD so the on-screen prompt always matches what E will do. Candidates
+   * without an {@link InteractableComponent} and {@link TransformComponent}, or that are
+   * scheduled for removal, are skipped.
+   *
+   * @param player The player entity.
+   * @param candidates The entities to search, e.g. every entity in the world.
+   * @return The targeted interactable, or {@code null} if none is in range or the player has
+   *         no position.
+   */
+  public static Entity findNearestInteractable(Entity player, Iterable<Entity> candidates) {
+    TransformComponent playerTransform = TransformComponent.MAPPER.get(player);
+    if (playerTransform == null) {
+      return null;
+    }
+
+    Entity nearest = null;
+    float nearestDist2 = Float.MAX_VALUE;
+    for (Entity candidate : candidates) {
+      InteractableComponent interactable = InteractableComponent.MAPPER.get(candidate);
+      TransformComponent transform = TransformComponent.MAPPER.get(candidate);
+      if (interactable == null || transform == null || candidate.isScheduledForRemoval()) {
+        continue;
+      }
+      float dist2 = centreDistance2(playerTransform.position, transform.position);
+      if (dist2 <= interactable.range * interactable.range && dist2 < nearestDist2) {
+        nearest = candidate;
+        nearestDist2 = dist2;
+      }
+    }
+    return nearest;
+  }
+
+  /**
+   * Returns the on-screen prompt for an interactable, e.g. "[E] Pick up Coffee".
+   *
+   * <p>The key name comes from {@link #INTERACT_KEY}, so it follows the binding if it changes.
+   *
+   * @param interactable The interactable the prompt is for.
+   * @return The prompt text.
+   */
+  public static String interactPrompt(InteractableComponent interactable) {
+    return "[" + Input.Keys.toString(INTERACT_KEY) + "] " + interactable.promptText;
   }
 
   /**

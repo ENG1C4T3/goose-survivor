@@ -4,3 +4,6 @@ ph_healthpack.png
 ph_longboi.png
 ph_player.png
 ph_projectile.png
+coffee.png
+trumpet.png
+energy_drink.png

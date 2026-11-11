@@ -6,14 +6,17 @@ import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
+import com.eng1c4t3.goosesurvivor.components.UseItemEventComponent;
 
 /**
- * Destroys all trigger event entities at the end of the frame, so each event is handled once.
+ * Destroys all event entities ({@link TriggerEventComponent} and {@link UseItemEventComponent})
+ * at the end of the frame, so each event is handled once.
  *
  * <p>This system has the highest possible priority value, so the engine always runs it after
  * every other system regardless of the order systems were added in.
  *
  * @see TriggerEventComponent
+ * @see UseItemEventComponent
  */
 public class EventCleanupSystem extends EntitySystem {
 
@@ -27,17 +30,18 @@ public class EventCleanupSystem extends EntitySystem {
   }
 
   /**
-   * Caches the trigger event entities.
+   * Caches the event entities.
    *
    * @param engine The {@link Engine} this system was added to.
    */
   @Override
   public void addedToEngine(Engine engine) {
-    events = engine.getEntitiesFor(Family.all(TriggerEventComponent.class).get());
+    events = engine.getEntitiesFor(
+        Family.one(TriggerEventComponent.class, UseItemEventComponent.class).get());
   }
 
   /**
-   * Removes every trigger event entity from the engine.
+   * Removes every event entity from the engine.
    *
    * @param deltaTime The time passed since the last frame.
    */

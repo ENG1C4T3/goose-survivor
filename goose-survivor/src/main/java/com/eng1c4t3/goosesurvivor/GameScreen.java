@@ -1,5 +1,6 @@
 package com.eng1c4t3.goosesurvivor;
 
+import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
@@ -8,6 +9,8 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
+import com.eng1c4t3.goosesurvivor.items.ItemType;
+import com.eng1c4t3.goosesurvivor.ui.InventoryHud;
 
 /**
  * Handles gameplay presentation and game session controls.
@@ -23,6 +26,7 @@ public class GameScreen extends ScreenAdapter {
   private final FitViewport viewport;
   private final TextureManager textureManager;
   private final WorldRenderer renderer;
+  private final InventoryHud hud;
 
   /**
    * Creates a gameplay screen for the given session, initializes its player.
@@ -55,6 +59,7 @@ public class GameScreen extends ScreenAdapter {
         textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE));
 
     renderer = new WorldRenderer(batch, camera);
+    hud = new InventoryHud(batch, camera, WORLD_WIDTH, WORLD_HEIGHT);
     populateWorld();
   }
 
@@ -64,14 +69,16 @@ public class GameScreen extends ScreenAdapter {
   private void populateWorld() {
     GameWorld world = session.getWorld();
 
-    world.addEntity(EntityFactory.createPlayer(255f, 255f,
-        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
+    Entity player = EntityFactory.createPlayer(255f, 255f,
+        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE));
+    world.addEntity(player);
 
     world.addEntity(EntityFactory.createBlock(100f, 100f, 50f, 50f,
         textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
 
-    world.addEntity(EntityFactory.createHealthPack(300f, 200f, 25f,
-        textureManager.getTextureRegion(TextureManager.HEALTH_PACK_TEXTURE)));
+    addItemPickup(ItemType.COFFEE, 200f, 300f);
+    addItemPickup(ItemType.TRUMPET, 500f, 150f);
+    addItemPickup(ItemType.ENERGY_DRINK, 300f, 300f);
 
     addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700f, 350f);
     addEnemy(EntityFactory.EnemyType.LONG_BOI, 400f, 400f);
@@ -89,6 +96,18 @@ public class GameScreen extends ScreenAdapter {
 
     session.getWorld().addEntity(EntityFactory.createEnemy(type, x, y,
         textureManager.getTextureRegion(stats.texture())));
+  }
+
+  /**
+   * Adds a world pickup for an item, using the item's texture.
+   *
+   * @param item the item given to the player on pickup
+   * @param x    the x-coordinate
+   * @param y    the y-coordinate
+   */
+  private void addItemPickup(ItemType item, float x, float y) {
+    session.getWorld().addEntity(EntityFactory.createItemPickup(item, x, y,
+        textureManager.getTextureRegion(item.texture)));
   }
 
   /**
@@ -134,6 +153,7 @@ public class GameScreen extends ScreenAdapter {
 
     viewport.apply();
     renderer.render(session.getWorld());
+    hud.render(session);
   }
 
   @Override
@@ -143,6 +163,7 @@ public class GameScreen extends ScreenAdapter {
 
   @Override
   public void dispose() {
+    hud.dispose();
     batch.dispose();
     textureManager.dispose();
   }
