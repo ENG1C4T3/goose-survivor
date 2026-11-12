@@ -82,6 +82,9 @@ public class GameScreen extends ScreenAdapter {
     session.configureShooting(
         textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE));
 
+    session.configureHiddenEvents(
+        textureManager.getTextureRegion(TextureManager.LONG_BOI_TEXTURE));
+
     renderer = new WorldRenderer(batch, camera);
     hud = new InventoryHud(batch, camera, WORLD_WIDTH, WORLD_HEIGHT);
     menuRenderer = new MenuRenderer(batch, camera);
@@ -110,11 +113,16 @@ public class GameScreen extends ScreenAdapter {
         textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
 
     addItemPickup(ItemType.COFFEE, 200f, 300f);
-    addItemPickup(ItemType.TRUMPET, 500f, 150f);
+    world.addEntity(EntityFactory.createMusicStudent(
+        500f, 150f,
+        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
     addItemPickup(ItemType.ENERGY_DRINK, 300f, 300f);
 
     addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700f, 350f);
-    addEnemy(EntityFactory.EnemyType.LONG_BOI, 400f, 400f);
+
+    world.addEntity(EntityFactory.createLongBoiStatue(
+        400f, 300f,
+        textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
   }
 
   /**

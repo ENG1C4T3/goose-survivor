@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
 import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
+import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
 import com.eng1c4t3.goosesurvivor.components.ItemPickupComponent;
@@ -30,7 +31,7 @@ public class InteractionSystem extends IteratingSystem {
   /**
    * Handles a single trigger event.
    *
-   * @param entity The event entity.
+   * @param entity    The event entity.
    * @param deltaTime The time passed since the last frame.
    */
   @Override
@@ -38,11 +39,16 @@ public class InteractionSystem extends IteratingSystem {
     TriggerEventComponent event = TriggerEventComponent.MAPPER.get(entity);
     Entity target = event.targetInteractable;
 
-    // The target may have been used up by an earlier event this frame, or stopped being
+    // The target may have been used up by an earlier event this frame, or stopped
+    // being
     // interactable since the event was raised
     if (target == null
         || target.isScheduledForRemoval()
         || !InteractableComponent.MAPPER.has(target)) {
+      return;
+    }
+
+    if (HiddenEventComponent.MAPPER.has(target)) {
       return;
     }
 
@@ -56,7 +62,8 @@ public class InteractionSystem extends IteratingSystem {
   }
 
   /**
-   * Applies every interaction effect on the target to the player, then removes the target if
+   * Applies every interaction effect on the target to the player, then removes
+   * the target if
    * it is single use.
    *
    * <p>If the target is an item pickup and the player cannot take the item (no inventory, or
