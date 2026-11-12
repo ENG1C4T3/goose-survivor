@@ -33,7 +33,15 @@ public class GooseSurvivor extends Game {
    */
   @Override
   public void create() {
-    startNewGame();
+    showStartScreen();
+  }
+
+  /**
+   * Replaces the current screen with the title screen. The previous screen
+   * releases its resources when hidden.
+   */
+  public void showStartScreen() {
+    setScreen(new StartScreen(this));
   }
 
   /**
