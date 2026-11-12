@@ -56,7 +56,7 @@ public class EnemySystem extends EntitySystem {
 
       Vector2 direction = new Vector2(dirX, dirY);
       if (!direction.isZero()) {
-        direction.nor().scl(enemyVelocity.maxSpeed);
+        direction.nor().scl(enemyVelocity.effectiveMaxSpeed());
       }
       enemyVelocity.velocity.set(direction.x, direction.y);
     }

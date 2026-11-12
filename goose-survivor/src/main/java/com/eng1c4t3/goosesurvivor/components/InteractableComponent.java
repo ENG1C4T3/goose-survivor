@@ -21,7 +21,7 @@ public class InteractableComponent implements Component {
 
   /** Maximum distance between the player's centre and this entity's centre to interact. */
   public float range;
-  /** Text shown to the player when they are in range, e.g. "Press E to open". */
+  /** Action shown to the player when they are in range, e.g. "Open"; the HUD adds the key. */
   public String promptText;
   /** Whether the entity is removed from the game after being interacted with once. */
   public boolean singleUse;

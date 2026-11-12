@@ -7,6 +7,8 @@ import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
+import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
+import com.eng1c4t3.goosesurvivor.components.ItemPickupComponent;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
 
 /**
@@ -64,11 +66,22 @@ public class InteractionSystem extends IteratingSystem {
    * the target if
    * it is single use.
    *
+   * <p>If the target is an item pickup and the player cannot take the item (no inventory, or
+   * the inventory is full), nothing happens and the target stays in the world.
+   *
    * @param event The interaction event.
    */
   protected void handleInteract(TriggerEventComponent event) {
     Entity player = event.sourcePlayer;
     Entity target = event.targetInteractable;
+
+    ItemPickupComponent pickup = ItemPickupComponent.MAPPER.get(target);
+    if (pickup != null) {
+      InventoryComponent inventory = InventoryComponent.MAPPER.get(player);
+      if (inventory == null || inventory.addItem(pickup.item) < 0) {
+        return;
+      }
+    }
 
     HealOnInteractComponent heal = HealOnInteractComponent.MAPPER.get(target);
     HealthComponent playerHealth = HealthComponent.MAPPER.get(player);

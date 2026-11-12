@@ -10,12 +10,15 @@ import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
+import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
+import com.eng1c4t3.goosesurvivor.components.ItemPickupComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.ProjectileComponent;
 import com.eng1c4t3.goosesurvivor.components.ShooterComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+import com.eng1c4t3.goosesurvivor.items.ItemType;
 
 /**
  * Factory for creating game entities with configured components.
@@ -162,6 +165,7 @@ public final class EntityFactory {
     player.add(new VelocityComponent(100f));
     player.add(new TextureComponent(region));
     player.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    player.add(new InventoryComponent(InventoryComponent.DEFAULT_CAPACITY));
     return player;
   }
 
@@ -203,7 +207,7 @@ public final class EntityFactory {
     Entity healthPack = new Entity();
     healthPack.add(new TransformComponent(x, y, 24f, 24f));
     healthPack.add(new TextureComponent(region));
-    healthPack.add(new InteractableComponent(48f, "Press E to heal", true));
+    healthPack.add(new InteractableComponent(48f, "Heal", true));
     healthPack.add(new HealOnInteractComponent(healAmount));
     return healthPack;
   }
@@ -221,9 +225,50 @@ public final class EntityFactory {
     statue.add(new TransformComponent(x, y, 32f, 32f));
     statue.add(new TextureComponent(region));
     statue.add(new CollisionComponent(CollisionComponent.Type.SOLID));
-    statue.add(new InteractableComponent(64f, "Press E to awaken Long Boi", false));
+    statue.add(new InteractableComponent(64f, "Awaken Long Boi", false));
     statue.add(new HiddenEventComponent(
         HiddenEventComponent.EventType.LONG_BOI_STATUE));
     return statue;
+  }
+
+  /**
+   * Creates a single-use item pickup that stays in the world if the inventory is
+   * full.
+   *
+   * <p>The pickup has no collision, so the player can walk over it.
+   *
+   * @param item   The item given to the player.
+   * @param x      The x-coordinate.
+   * @param y      The y-coordinate.
+   * @param region The pickup's texture region.
+   * @return The new item pickup entity.
+   */
+  public static Entity createItemPickup(
+      ItemType item, float x, float y, TextureRegion region) {
+    Entity pickup = new Entity();
+    pickup.add(new TransformComponent(x, y, 24f, 24f));
+    pickup.add(new TextureComponent(region));
+    pickup.add(new InteractableComponent(48f, "Pick up " + item.displayName, true));
+    pickup.add(new ItemPickupComponent(item));
+    return pickup;
+  }
+
+  /**
+   * Creates a stationary music student who gives the player a trumpet.
+   *
+   * @param x The initial x-coordinate.
+   * @param y The initial y-coordinate.
+   * @param region The student's texture region.
+   * @return The new music student entity.
+   */
+  public static Entity createMusicStudent(float x, float y, TextureRegion region) {
+    Entity student = new Entity();
+    student.add(new TransformComponent(x, y, 32f, 32f));
+    student.add(new TextureComponent(region));
+    student.add(new CollisionComponent(CollisionComponent.Type.SOLID));
+    student.add(new InteractableComponent(64f, "Talk to music student", false));
+    student.add(new HiddenEventComponent(
+        HiddenEventComponent.EventType.MUSIC_STUDENT));
+    return student;
   }
 }

@@ -16,9 +16,11 @@ import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.HiddenEventSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
+import com.eng1c4t3.goosesurvivor.systems.InventorySystem;
 import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 import com.eng1c4t3.goosesurvivor.systems.ProjectileSystem;
 import com.eng1c4t3.goosesurvivor.systems.ShooterSystem;
+import com.eng1c4t3.goosesurvivor.systems.SpeedBoostSystem;
 
 /**
  * Manages a playthrough's world, timer, game state and gameplay updates.
@@ -45,23 +47,31 @@ public class GameSession {
     InteractionSystem interactionSystem = new InteractionSystem();
     interactionSystem.priority = 1;
 
+    InventorySystem inventorySystem = new InventorySystem();
+    inventorySystem.priority = 2;
+
+    SpeedBoostSystem speedBoostSystem = new SpeedBoostSystem();
+    speedBoostSystem.priority = 3;
+
     EnemySystem enemySystem = new EnemySystem();
-    enemySystem.priority = 2;
+    enemySystem.priority = 4;
 
     MovementSystem movementSystem = new MovementSystem();
-    movementSystem.priority = 4;
+    movementSystem.priority = 6;
 
     CollisionSystem collisionSystem = new CollisionSystem();
-    collisionSystem.priority = 5;
+    collisionSystem.priority = 7;
 
     ProjectileSystem projectileSystem = new ProjectileSystem();
-    projectileSystem.priority = 6;
+    projectileSystem.priority = 8;
 
     HealthSystem healthSystem = new HealthSystem();
-    healthSystem.priority = 7;
+    healthSystem.priority = 9;
 
     engine.addSystem(inputSystem);
     engine.addSystem(interactionSystem);
+    engine.addSystem(inventorySystem);
+    engine.addSystem(speedBoostSystem);
     engine.addSystem(enemySystem);
     engine.addSystem(movementSystem);
     engine.addSystem(collisionSystem);
@@ -91,7 +101,7 @@ public class GameSession {
     }
 
     ShooterSystem shooterSystem = new ShooterSystem(projectileRegion);
-    shooterSystem.priority = 3;
+    shooterSystem.priority = 5;
     engine.addSystem(shooterSystem);
   }
 
