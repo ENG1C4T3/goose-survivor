@@ -146,6 +146,10 @@ public class GameSession {
     return gameState;
   }
 
+  public float getElapsedTime() {
+    return elapsedTime;
+  }
+
   public float getRemainingTime() {
     return Math.max(0f, TIME_LIMIT - elapsedTime);
   }

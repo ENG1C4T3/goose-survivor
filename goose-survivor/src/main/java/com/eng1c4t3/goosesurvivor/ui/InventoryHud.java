@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import com.eng1c4t3.goosesurvivor.GameSession;
-import com.eng1c4t3.goosesurvivor.SessionState;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
@@ -25,7 +24,8 @@ import com.eng1c4t3.goosesurvivor.systems.InputSystem;
 /**
  * Temporary debug HUD: draws the player's health, an inventory hotbar with uses and cooldowns,
  * labels above item pickups, an interact prompt popup (e.g. "[E] Pick up Coffee") above
- * the interactable the player is in range of, and a pause banner.
+ * the interactable the player is in range of. Menus are drawn by
+ * {@link MenuRenderer}.
  *
  * <p>Uses the libGDX default font and plain shapes so it needs no assets. Draws in world
  * coordinates, so it relies on the camera not moving.
@@ -108,9 +108,6 @@ public class InventoryHud implements Disposable {
     drawPickupLabels(session, target);
     if (prompt != null) {
       drawPromptText(prompt);
-    }
-    if (session.getState() == SessionState.PAUSED) {
-      drawCentred("PAUSED (P to resume)", worldWidth / 2, worldHeight / 2, Color.WHITE);
     }
     batch.end();
   }
