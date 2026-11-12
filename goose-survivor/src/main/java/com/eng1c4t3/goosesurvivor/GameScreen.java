@@ -11,11 +11,21 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.items.ItemType;
 import com.eng1c4t3.goosesurvivor.ui.InventoryHud;
+import com.eng1c4t3.goosesurvivor.ui.Menu;
+import com.eng1c4t3.goosesurvivor.ui.MenuInput;
+import com.eng1c4t3.goosesurvivor.ui.MenuRenderer;
 
 /**
  * Handles gameplay presentation and game session controls.
  */
 public class GameScreen extends ScreenAdapter {
+  /** Actions offered by the pause menu. */
+  private enum PauseAction {
+    RESUME,
+    RESTART,
+    QUIT
+  }
+
   private final GameSession session;
 
   private static final float WORLD_WIDTH = 800f;
@@ -27,20 +37,31 @@ public class GameScreen extends ScreenAdapter {
   private final TextureManager textureManager;
   private final WorldRenderer renderer;
   private final InventoryHud hud;
+  private final Menu<PauseAction> pauseMenu;
+  private final MenuRenderer menuRenderer;
+  private final MenuInput menuInput;
+  private final GooseSurvivor game;
+  private boolean disposed = false;
 
   /**
    * Creates a gameplay screen for the given session, initializes its player.
    *
+   * @param game    the game that owns this screen, used to restart
    * @param session the new session displayed by this screen
    *
-   * @throws IllegalArgumentException if session is null or its world is not
-   *                                  empty.
+   * @throws IllegalArgumentException if game or session is null or the
+   *                                  session's world is not empty.
    */
-  public GameScreen(GameSession session) {
+  public GameScreen(GooseSurvivor game, GameSession session) {
+    if (game == null) {
+      throw new IllegalArgumentException(
+          "Game must not be null");
+    }
     if (session == null) {
       throw new IllegalArgumentException(
           "Session must not be null");
     }
+    this.game = game;
     if (session.getWorld().getEntities().size() != 0) {
       throw new IllegalArgumentException(
           "New game screen requires empty world");
@@ -60,6 +81,14 @@ public class GameScreen extends ScreenAdapter {
 
     renderer = new WorldRenderer(batch, camera);
     hud = new InventoryHud(batch, camera, WORLD_WIDTH, WORLD_HEIGHT);
+    menuRenderer = new MenuRenderer(batch, camera);
+    menuInput = new MenuInput(viewport);
+    pauseMenu = new Menu<PauseAction>("PAUSED", WORLD_WIDTH, WORLD_HEIGHT)
+        .addItem("Resume", PauseAction.RESUME)
+        .addItem("Restart", PauseAction.RESTART)
+        .addItem("Quit to Desktop", PauseAction.QUIT)
+        .addFooterLine("WASD / Arrows - Move     E - Interact     1-9 - Use item")
+        .addFooterLine("Up/Down + Enter or mouse to choose     Esc / P - Resume");
     populateWorld();
   }
 
@@ -122,19 +151,58 @@ public class GameScreen extends ScreenAdapter {
     viewport.update(width, height, true);
   }
 
-  /**
-   * Handles pause and resume.
-   * press "P" to pause or resume.
-   */
-  private void handleSessionInput() {
-    if (!Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-      return;
-    }
+  private static boolean isPauseKeyJustPressed() {
+    return Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
+        || Gdx.input.isKeyJustPressed(Input.Keys.P);
+  }
 
-    if (session.getState() == SessionState.RUNNING) {
-      session.pause();
-    } else if (session.getState() == SessionState.PAUSED) {
-      session.resume();
+  /**
+   * Opens the pause menu when Esc or P is pressed during play.
+   */
+  private void handleRunningInput() {
+    if (isPauseKeyJustPressed()) {
+      openPauseMenu();
+    }
+  }
+
+  private void openPauseMenu() {
+    session.pause();
+    if (session.getState() == SessionState.PAUSED) {
+      pauseMenu.reset();
+    }
+  }
+
+  /**
+   * Handles input while the pause menu is open; Esc or P resumes.
+   *
+   * @return the action chosen this frame, or null if none
+   */
+  private PauseAction handlePausedInput() {
+    if (isPauseKeyJustPressed()) {
+      return PauseAction.RESUME;
+    }
+    return menuInput.poll(pauseMenu);
+  }
+
+  /**
+   * Carries out a pause menu choice.
+   *
+   * @return true if this screen has been replaced or the app is exiting, so the
+   *         frame must not continue
+   */
+  private boolean applyPauseChoice(PauseAction choice) {
+    switch (choice) {
+      case RESUME:
+        session.resume();
+        return false;
+      case RESTART:
+        game.startNewGame();
+        return true;
+      case QUIT:
+        Gdx.app.exit();
+        return true;
+      default:
+        return false;
     }
   }
 
@@ -145,7 +213,14 @@ public class GameScreen extends ScreenAdapter {
    */
   @Override
   public void render(float deltaTime) {
-    handleSessionInput();
+    if (session.getState() == SessionState.RUNNING) {
+      handleRunningInput();
+    } else if (session.getState() == SessionState.PAUSED) {
+      PauseAction choice = handlePausedInput();
+      if (choice != null && applyPauseChoice(choice)) {
+        return;
+      }
+    }
     session.update(deltaTime);
 
     Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
@@ -154,15 +229,34 @@ public class GameScreen extends ScreenAdapter {
     viewport.apply();
     renderer.render(session.getWorld());
     hud.render(session);
+    if (session.getState() == SessionState.PAUSED) {
+      menuRenderer.render(pauseMenu);
+    }
   }
 
+  /**
+   * Opens the pause menu when the window loses focus or is minimised.
+   */
   @Override
   public void pause() {
-    session.pause();
+    openPauseMenu();
+  }
+
+  /**
+   * Releases this screen's resources once it is no longer shown.
+   */
+  @Override
+  public void hide() {
+    dispose();
   }
 
   @Override
   public void dispose() {
+    if (disposed) {
+      return;
+    }
+    disposed = true;
+    menuRenderer.dispose();
     hud.dispose();
     batch.dispose();
     textureManager.dispose();

@@ -33,8 +33,15 @@ public class GooseSurvivor extends Game {
    */
   @Override
   public void create() {
-    GameSession session = new GameSession();
-    setScreen(new GameScreen(session));
+    startNewGame();
+  }
+
+  /**
+   * Replaces the current screen with a fresh session. The previous screen
+   * releases its resources when hidden.
+   */
+  public void startNewGame() {
+    setScreen(new GameScreen(this, new GameSession()));
   }
 
   /**
