@@ -44,6 +44,9 @@ public class InventoryHud implements Disposable {
   private static final float PROMPT_OFFSET = 8f;
   private static final float PROMPT_EDGE_MARGIN = 4f;
   private static final Color PROMPT_FILL = new Color(0f, 0f, 0f, 0.75f);
+  private static final float TIMER_SCALE = 2f;
+  /** Seconds left at which the timer turns red. */
+  private static final float TIMER_WARNING_SECONDS = 30f;
   private static final Color PROMPT_BORDER = new Color(1f, 0.85f, 0.3f, 1f);
 
   private final SpriteBatch batch;
@@ -102,6 +105,7 @@ public class InventoryHud implements Disposable {
     if (player != null) {
       drawHealth(player);
     }
+    drawTimer(session.getRemainingTime());
     if (inventory != null) {
       drawSlotText(inventory);
     }
@@ -213,6 +217,29 @@ public class InventoryHud implements Disposable {
       }
     }
     font.getData().setScale(1f);
+  }
+
+  /**
+   * Draws the countdown to game over at the top centre of the screen, turning red for the
+   * last {@link #TIMER_WARNING_SECONDS} seconds.
+   */
+  private void drawTimer(float remainingSeconds) {
+    font.getData().setScale(TIMER_SCALE);
+    drawCentred(formatCountdown(remainingSeconds), worldWidth / 2, worldHeight - 10,
+        remainingSeconds <= TIMER_WARNING_SECONDS ? Color.RED : Color.WHITE);
+    font.getData().setScale(1f);
+  }
+
+  /**
+   * Formats a countdown as minutes and seconds, rounding up so it reads 5:00 at the start
+   * and only shows 0:00 once time has run out, e.g. 83.4 becomes "1:24".
+   *
+   * @param remainingSeconds Seconds left.
+   * @return The formatted countdown.
+   */
+  public static String formatCountdown(float remainingSeconds) {
+    int whole = (int) Math.ceil(Math.max(0f, remainingSeconds));
+    return String.format("%d:%02d", whole / 60, whole % 60);
   }
 
   private void drawHealth(Entity player) {

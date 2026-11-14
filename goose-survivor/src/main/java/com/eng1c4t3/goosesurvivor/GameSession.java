@@ -5,13 +5,17 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntityListener;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
+import com.eng1c4t3.goosesurvivor.systems.DecoySystem;
 import com.eng1c4t3.goosesurvivor.systems.EnemySystem;
 import com.eng1c4t3.goosesurvivor.systems.EventCleanupSystem;
+import com.eng1c4t3.goosesurvivor.systems.FoxSystem;
 import com.eng1c4t3.goosesurvivor.systems.HealthSystem;
 import com.eng1c4t3.goosesurvivor.systems.HiddenEventSystem;
 import com.eng1c4t3.goosesurvivor.systems.InputSystem;
@@ -21,6 +25,8 @@ import com.eng1c4t3.goosesurvivor.systems.MovementSystem;
 import com.eng1c4t3.goosesurvivor.systems.ProjectileSystem;
 import com.eng1c4t3.goosesurvivor.systems.ShooterSystem;
 import com.eng1c4t3.goosesurvivor.systems.SpeedBoostSystem;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Manages a playthrough's world, timer, game state and gameplay updates.
@@ -73,6 +79,9 @@ public class GameSession {
     engine.addSystem(inventorySystem);
     engine.addSystem(speedBoostSystem);
     engine.addSystem(enemySystem);
+    FoxSystem foxSystem = new FoxSystem(GameScreen.WORLD_WIDTH, GameScreen.WORLD_HEIGHT);
+    foxSystem.priority = 4;
+    engine.addSystem(foxSystem);
     engine.addSystem(movementSystem);
     engine.addSystem(collisionSystem);
     engine.addSystem(projectileSystem);
@@ -82,6 +91,20 @@ public class GameSession {
     collisionSystem.addCollisionListener(projectileSystem);
 
     registerPlayerDeathListener();
+    registerEnemyDeathListener();
+  }
+
+  /**
+   * Enables placeable decoys, such as popcorn, using textures loaded by the screen.
+   *
+   * @param textures Returns the texture region for a texture file name.
+   * @throws IllegalStateException if decoys have already been configured.
+   */
+  public void configureDecoys(Function<String, TextureRegion> textures) {
+    if (engine.getSystem(DecoySystem.class) != null) {
+      throw new IllegalStateException("Decoys have already been configured");
+    }
+    engine.addSystem(new DecoySystem(textures));
   }
 
   /**
@@ -92,6 +115,18 @@ public class GameSession {
    * @throws IllegalStateException    if shooting has already been configured.
    */
   public void configureShooting(TextureRegion projectileRegion) {
+    configureShooting(projectileRegion, null);
+  }
+
+  /**
+   * Enables shooting, also letting projectiles with their own texture (e.g. the launchers'
+   * nuts and seeds) look it up.
+   *
+   * @param projectileRegion The default projectile texture.
+   * @param textures         Returns the texture region for a texture file name, or null.
+   */
+  public void configureShooting(TextureRegion projectileRegion,
+      Function<String, TextureRegion> textures) {
     if (projectileRegion == null) {
       throw new IllegalArgumentException(
           "Projectile texture must not be null");
@@ -101,6 +136,7 @@ public class GameSession {
     }
 
     ShooterSystem shooterSystem = new ShooterSystem(projectileRegion);
+    shooterSystem.setTextures(textures);
     shooterSystem.priority = 5;
     engine.addSystem(shooterSystem);
   }
@@ -108,10 +144,13 @@ public class GameSession {
   /**
    * Enables hidden events using the supplied Long Boi texture.
    *
-   * @param bossRegion The texture region for Long Boi.
+   * @param bossRegion   The texture region for Long Boi.
+   * @param textures     Returns the texture region for a texture file name; used for the
+   *                     entities spawners create.
    * @throws IllegalStateException if hidden events are already configured
    */
-  public void configureHiddenEvents(TextureRegion bossRegion) {
+  public void configureHiddenEvents(TextureRegion bossRegion,
+      Function<String, TextureRegion> textures) {
     if (engine.getSystem(HiddenEventSystem.class) != null) {
       throw new IllegalStateException("Hidden events have already been configured");
     }
@@ -125,8 +164,29 @@ public class GameSession {
           bossRegion);
     });
 
+    hiddenEventSystem.setTextures(textures);
+    hiddenEventSystem.setOnDoorOpened(this::win);
     hiddenEventSystem.priority = 8;
     engine.addSystem(hiddenEventSystem);
+  }
+
+  /**
+   * Makes the player's aim follow the mouse.
+   *
+   * @param screenToWorld Converts a screen position to world coordinates in place, e.g.
+   *                      {@code viewport::unproject}.
+   */
+  public void configureMouseAim(UnaryOperator<Vector2> screenToWorld) {
+    engine.getSystem(InputSystem.class).setScreenToWorld(screenToWorld);
+  }
+
+  /**
+   * Returns the session's engine, for tests in this package.
+   *
+   * @return The engine.
+   */
+  Engine getEngine() {
+    return engine;
   }
 
   public GameWorld getWorld() {
@@ -197,6 +257,28 @@ public class GameSession {
 
     engine.update(deltaTime);
 
+  }
+
+  /**
+   * Records each enemy that is removed because it ran out of health.
+   */
+  private void registerEnemyDeathListener() {
+    Family enemyFamily = Family.all(EnemyComponent.class, HealthComponent.class).get();
+    engine.addEntityListener(enemyFamily, new EntityListener() {
+      @Override
+      public void entityAdded(Entity entity) {
+        // Spawning an enemy does not change the stats.
+      }
+
+      @Override
+      public void entityRemoved(Entity entity) {
+        EnemyComponent enemy = EnemyComponent.MAPPER.get(entity);
+        HealthComponent health = HealthComponent.MAPPER.get(entity);
+        if (enemy.type != null && health.isDead()) {
+          stats.recordEnemyKilled(enemy.type);
+        }
+      }
+    });
   }
 
   private void registerPlayerDeathListener() {

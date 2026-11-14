@@ -2,6 +2,7 @@ package com.eng1c4t3.goosesurvivor.components;
 
 import com.badlogic.ashley.core.Component;
 import com.badlogic.ashley.core.ComponentMapper;
+import com.eng1c4t3.goosesurvivor.entities.EntityFactory.EnemyType;
 
 /**
  * Component for enemy entities.
@@ -26,6 +27,8 @@ public class EnemyComponent implements Component {
   public float knockbackDuration;
   /** Remaining knockback time in seconds; the enemy is knocked back while this is positive. */
   public float knockbackTimer;
+  /** The kind of enemy, used to credit kills; null for enemies not made by the factory. */
+  public EnemyType type;
 
   /**
    * Constructs an EnemyComponent with default damage and knockback values.

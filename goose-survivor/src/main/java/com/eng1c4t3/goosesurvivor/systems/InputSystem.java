@@ -8,6 +8,7 @@ import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
@@ -15,6 +16,8 @@ import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
 import com.eng1c4t3.goosesurvivor.components.UseItemEventComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
+
+import java.util.function.UnaryOperator;
 
 /**
  * Handles player input: updates the player's velocity from the movement keys, and raises a
@@ -36,6 +39,7 @@ public class InputSystem extends IteratingSystem {
   public static final int MAX_ITEM_KEYS = 9;
 
   private ImmutableArray<Entity> interactables;
+  private UnaryOperator<Vector2> screenToWorld;
 
   /**
    * Returns the key that uses the item in an inventory slot.
@@ -77,8 +81,20 @@ public class InputSystem extends IteratingSystem {
    * @param entity The entity to process.
    * @param deltaTime The time passed since the last frame.
    */
+  /**
+   * Sets how mouse positions are converted from screen to world coordinates, so the player's
+   * aim follows the mouse. Without it the player has no aim.
+   *
+   * @param screenToWorld Converts a screen position to world coordinates in place, e.g.
+   *                      {@code viewport::unproject}; null to stop tracking the mouse.
+   */
+  public void setScreenToWorld(UnaryOperator<Vector2> screenToWorld) {
+    this.screenToWorld = screenToWorld;
+  }
+
   @Override
   protected void processEntity(Entity entity, float deltaTime) {
+    handleAim(entity);
     handleMovement(entity);
     if (Gdx.input.isKeyJustPressed(INTERACT_KEY)) {
       handleInteract(entity);
@@ -92,6 +108,19 @@ public class InputSystem extends IteratingSystem {
    *
    * @param player The player entity.
    */
+  /**
+   * Stores where the mouse is pointing, in world coordinates, on the player.
+   */
+  private void handleAim(Entity player) {
+    PlayerComponent playerComponent = PlayerComponent.MAPPER.get(player);
+    if (screenToWorld == null || playerComponent == null) {
+      return;
+    }
+    playerComponent.aim.set(Gdx.input.getX(), Gdx.input.getY());
+    screenToWorld.apply(playerComponent.aim);
+    playerComponent.hasAim = true;
+  }
+
   private void handleItemKeys(Entity player) {
     InventoryComponent inventory = InventoryComponent.MAPPER.get(player);
     if (inventory == null) {
@@ -159,6 +188,10 @@ public class InputSystem extends IteratingSystem {
    * Returns the interactable that pressing the interact key would target: the one nearest to
    * the player whose range the player is within.
    *
+   * <p>The player is in range when the gap between the edges of the player and the interactable
+   * is at most {@link InteractableComponent#range}, so the size of either sprite doesn't matter.
+   * If several are in range, the one whose centre is closest to the player's centre wins.
+   *
    * <p>Shared with the HUD so the on-screen prompt always matches what E will do. Candidates
    * without an {@link InteractableComponent} and {@link TransformComponent}, or that are
    * scheduled for removal, are skipped.
@@ -182,8 +215,12 @@ public class InputSystem extends IteratingSystem {
       if (interactable == null || transform == null || candidate.isScheduledForRemoval()) {
         continue;
       }
+      float gap2 = edgeGap2(playerTransform.position, transform.position);
+      if (gap2 > interactable.range * interactable.range) {
+        continue;
+      }
       float dist2 = centreDistance2(playerTransform.position, transform.position);
-      if (dist2 <= interactable.range * interactable.range && dist2 < nearestDist2) {
+      if (dist2 < nearestDist2) {
         nearest = candidate;
         nearestDist2 = dist2;
       }
@@ -201,6 +238,16 @@ public class InputSystem extends IteratingSystem {
    */
   public static String interactPrompt(InteractableComponent interactable) {
     return "[" + Input.Keys.toString(INTERACT_KEY) + "] " + interactable.promptText;
+  }
+
+  /**
+   * Returns the squared length of the gap between the edges of two rectangles, or 0 if they
+   * touch or overlap.
+   */
+  private static float edgeGap2(Rectangle a, Rectangle b) {
+    float dx = Math.max(0f, Math.max(a.x - (b.x + b.width), b.x - (a.x + a.width)));
+    float dy = Math.max(0f, Math.max(a.y - (b.y + b.height), b.y - (a.y + a.height)));
+    return dx * dx + dy * dy;
   }
 
   /**

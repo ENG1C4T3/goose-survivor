@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.items.ItemType;
 import com.eng1c4t3.goosesurvivor.ui.InventoryHud;
@@ -29,8 +30,10 @@ public class GameScreen extends ScreenAdapter {
 
   private final GameSession session;
 
-  static final float WORLD_WIDTH = 800f;
-  static final float WORLD_HEIGHT = 480f;
+  /** World width in pixels: the game always shows a 1280x720 (HD) area, scaled to fit. */
+  static final float WORLD_WIDTH = 1280f;
+  /** World height in pixels. */
+  static final float WORLD_HEIGHT = 720f;
 
   private final SpriteBatch batch;
   private final OrthographicCamera camera;
@@ -80,12 +83,21 @@ public class GameScreen extends ScreenAdapter {
     textureManager.finishLoading();
 
     session.configureShooting(
-        textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE));
+        textureManager.getTextureRegion(TextureManager.PROJECTILE_TEXTURE),
+        textureManager::getTextureRegion);
+
+    session.configureDecoys(textureManager::getTextureRegion);
+
+    session.configureMouseAim(viewport::unproject);
 
     session.configureHiddenEvents(
-        textureManager.getTextureRegion(TextureManager.LONG_BOI_TEXTURE));
+        textureManager.getTextureRegion(TextureManager.LONG_BOI_TEXTURE),
+        textureManager::getTextureRegion);
 
     renderer = new WorldRenderer(batch, camera);
+    renderer.setBackground(
+        textureManager.getTextureRegion(TextureManager.BACKGROUND_TEXTURE),
+        WORLD_WIDTH, WORLD_HEIGHT);
     hud = new InventoryHud(batch, camera, WORLD_WIDTH, WORLD_HEIGHT);
     menuRenderer = new MenuRenderer(batch, camera);
     menuInput = new MenuInput(viewport);
@@ -105,24 +117,37 @@ public class GameScreen extends ScreenAdapter {
   private void populateWorld() {
     GameWorld world = session.getWorld();
 
-    Entity player = EntityFactory.createPlayer(255f, 255f,
+    Entity player = EntityFactory.createPlayer(408f, 382f,
         textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE));
+    InventoryComponent.MAPPER.get(player).addItem(ItemType.FOOD_STREAM_LAUNCHER);
     world.addEntity(player);
 
-    world.addEntity(EntityFactory.createBlock(100f, 100f, 50f, 50f,
-        textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
-
-    addItemPickup(ItemType.COFFEE, 200f, 300f);
     world.addEntity(EntityFactory.createMusicStudent(
-        500f, 150f,
-        textureManager.getTextureRegion(TextureManager.PLAYER_TEXTURE)));
-    addItemPickup(ItemType.ENERGY_DRINK, 300f, 300f);
-
-    addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 700f, 350f);
+        800f, 225f,
+        textureManager.getTextureRegion(TextureManager.MUSIC_STUDENT_TEXTURE)));
 
     world.addEntity(EntityFactory.createLongBoiStatue(
-        400f, 300f,
-        textureManager.getTextureRegion(TextureManager.BLOCK_TEXTURE)));
+        640f, 450f,
+        textureManager.getTextureRegion(TextureManager.LONG_BOI_STATUE_TEXTURE)));
+
+    world.addEntity(EntityFactory.createCoffeeVendingMachine(480f, 450f,
+        textureManager.getTextureRegion(TextureManager.COFFEE_VENDING_MACHINE_TEXTURE),
+        textureManager.getTextureRegion(TextureManager.COFFEE_VENDING_MACHINE_EMPTY_TEXTURE)));
+
+    world.addEntity(EntityFactory.createVendingMachine(320f, 450f,
+        textureManager.getTextureRegion(TextureManager.ITEM_VENDING_MACHINE_TEXTURE),
+        textureManager.getTextureRegion(TextureManager.ITEM_VENDING_MACHINE_EMPTY_TEXTURE)));
+
+    addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 1120f, 525f);
+    addEnemy(EntityFactory.EnemyType.TANK_GOOSE, 1120f, 150f);
+
+    world.addEntity(EntityFactory.createFox(960f, 600f,
+        textureManager.getTextureRegion(TextureManager.FOX_TEXTURE)));
+    world.addEntity(EntityFactory.createFountain(110f, 100f,
+        textureManager.getTextureRegion(TextureManager.FOUNTAIN_TEXTURE)));
+    // The gradient goose (which drops the key) spawns below the door when the player nears it.
+    world.addEntity(EntityFactory.createDoor(WORLD_WIDTH - 97f, 300f,
+        textureManager.getTextureRegion(TextureManager.DOOR_TEXTURE)));
   }
 
   /**
@@ -146,8 +171,8 @@ public class GameScreen extends ScreenAdapter {
    * @param x    the x-coordinate
    * @param y    the y-coordinate
    */
-  private void addItemPickup(ItemType item, float x, float y) {
-    session.getWorld().addEntity(EntityFactory.createItemPickup(item, x, y,
+  private void addItemPickup(ItemType item, float x, float y, int width, int height) {
+    session.getWorld().addEntity(EntityFactory.createItemPickup(item, x, y, width, height,
         textureManager.getTextureRegion(item.texture)));
   }
 

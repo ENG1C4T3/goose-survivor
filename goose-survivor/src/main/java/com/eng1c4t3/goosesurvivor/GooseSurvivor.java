@@ -21,7 +21,10 @@ public class GooseSurvivor extends Game {
   public static void main(String[] args) {
     Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
     config.setTitle("Goose Survivor");
-    config.setWindowedMode(800, 480);
+    // Always fullscreen at the monitor's native resolution. The game world is a fixed
+    // 1280x720 (HD) area that each screen's FitViewport scales up to fill the display.
+    config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
+    config.setResizable(false);
     config.setForegroundFPS(60);
     config.useVsync(true);
     new Lwjgl3Application(new GooseSurvivor(), config);
