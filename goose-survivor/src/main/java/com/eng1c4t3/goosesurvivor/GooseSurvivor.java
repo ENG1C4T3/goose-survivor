@@ -19,6 +19,16 @@ public class GooseSurvivor extends Game {
    * @param args command-line arguments
    */
   public static void main(String[] args) {
+    // On macOS, GLFW must run on the process's first thread, which needs the JVM flag
+    // -XstartOnFirstThread. `./gradlew run` adds it, but double-clicking the JAR or
+    // `java -jar` does not, so GLFW throws an IllegalStateException. Without the flag,
+    // switch to LWJGL's glfw_async build, which works from any thread. Does nothing on
+    // other operating systems.
+    long pid = ProcessHandle.current().pid();
+    if (!"1".equals(System.getenv("JAVA_STARTED_ON_FIRST_THREAD_" + pid))) {
+      Lwjgl3ApplicationConfiguration.useGlfwAsync();
+    }
+
     Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
     config.setTitle("Goose Survivor");
     // Always fullscreen at the monitor's native resolution. The game world is a fixed
