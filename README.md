@@ -3,6 +3,13 @@
 A 2D survival game built with [libGDX](https://libgdx.com/) using the [Ashley](https://github.com/libgdx/ashley) Entity-Component-System (ECS) architecture.
 ![img.png](misc/gameplay.png)
 
+## Links
+
+| | |
+| --- | --- |
+| **Executable JAR** | [Download the latest release](https://github.com/ENG1C4T3/goose-survivor/releases/latest) |
+| **GitHub repository** | [github.com/ENG1C4T3/goose-survivor](https://github.com/ENG1C4T3/goose-survivor) |
+
 ## Controls
 
 | Key | Action |
@@ -12,107 +19,108 @@ A 2D survival game built with [libGDX](https://libgdx.com/) using the [Ashley](h
 | 1-9 | Use the item in that hotbar slot |
 | P | Pause / resume |
 
-## Arcitecture
+## Architecture
+
+Diagrams referenced in the Architecture report (`Arch1.pdf`), numbered to match it. Click a diagram to expand it.
 
 <details>
-<summary> <b>1.1</b> </summary>
-<img src="misc/arcitecture/1_1.png">
+<summary><b>1.1</b></summary>
+<img src="misc/architecture/1_1.png">
 </details>
 
 <details>
-<summary> <b>3.2</b> </summary>
-<img src="misc/arcitecture/3_2.png">
+<summary><b>3.2</b></summary>
+<img src="misc/architecture/3_2.png">
 </details>
 
 <details>
-<summary> <b>3.2.1</b> </summary>
-<img src="misc/arcitecture/3_2_1.png">
+<summary><b>3.2.1</b></summary>
+<img src="misc/architecture/3_2_1.png">
 </details>
 
 <details>
-<summary> <b>3.2.2</b> </summary>
-<img src="misc/arcitecture/3_2_2.png">
+<summary><b>3.2.2</b></summary>
+<img src="misc/architecture/3_2_2.png">
 </details>
 
 <details>
-<summary> <b>3.2.3</b> </summary>
-<img src="misc/arcitecture/3_2_3.png">
+<summary><b>3.2.3</b></summary>
+<img src="misc/architecture/3_2_3.png">
 </details>
 
 <details>
-<summary> <b>3.2.4</b> </summary>
-<img src="misc/arcitecture/3_2_4.png">
+<summary><b>3.2.4</b></summary>
+<img src="misc/architecture/3_2_4.png">
 </details>
 
 <details>
-<summary> <b>3.2.5</b> </summary>
-<img src="misc/arcitecture/3_2_5.png">
+<summary><b>3.2.5</b></summary>
+<img src="misc/architecture/3_2_5.png">
 </details>
 
 <details>
-<summary> <b>3.2.6</b> </summary>
-<img src="misc/arcitecture/3_2_6.png">
+<summary><b>3.2.6</b></summary>
+<img src="misc/architecture/3_2_6.png">
 </details>
 
 <details>
-<summary> <b>3.2.7</b> </summary>
-<img src="misc/arcitecture/3_2_7.png">
+<summary><b>3.2.7</b></summary>
+<img src="misc/architecture/3_2_7.png">
 </details>
 
 <details>
-<summary> <b>3.3.1</b> </summary>
-<img src="misc/arcitecture/3_3_1.png">
-</details>
-
-
-<details>
-<summary> <b>4.1</b> </summary>
-<img src="misc/arcitecture/4.1.jpg">
+<summary><b>3.3.1</b></summary>
+<img src="misc/architecture/3_3_1.png">
 </details>
 
 <details>
-<summary> <b>4.1.1</b> </summary>
-<img src="misc/arcitecture/4.1.1.png">
+<summary><b>4.1</b></summary>
+<img src="misc/architecture/4.1.jpg">
 </details>
 
 <details>
-<summary> <b>4.2</b> </summary>
-<img src="misc/arcitecture/4.2.jpg">
+<summary><b>4.1.1</b></summary>
+<img src="misc/architecture/4.1.1.png">
 </details>
 
 <details>
-<summary> <b>4.2.1</b> </summary>
-<img src="misc/arcitecture/4.2.1.png">
+<summary><b>4.2</b></summary>
+<img src="misc/architecture/4.2.jpg">
 </details>
 
 <details>
-<summary> <b>4.3</b> </summary>
-<img src="misc/arcitecture/4.3.jpg">
+<summary><b>4.2.1</b></summary>
+<img src="misc/architecture/4.2.1.png">
 </details>
 
 <details>
-<summary> <b>4.3.1</b> </summary>
-<img src="misc/arcitecture/4.3.1.jpg">
+<summary><b>4.3</b></summary>
+<img src="misc/architecture/4.3.jpg">
 </details>
 
 <details>
-<summary> <b>4.3.2</b> </summary>
-<img src="misc/arcitecture/4.3.2.jpg">
+<summary><b>4.3.1</b></summary>
+<img src="misc/architecture/4.3.1.jpg">
 </details>
 
 <details>
-<summary> <b>4.4</b> </summary>
-<img src="misc/arcitecture/4.4.jpg">
+<summary><b>4.3.2</b></summary>
+<img src="misc/architecture/4.3.2.jpg">
 </details>
 
 <details>
-<summary> <b>4.5.1</b> </summary>
-<img src="misc/arcitecture/4.5.1.jpg">
+<summary><b>4.4</b></summary>
+<img src="misc/architecture/4.4.jpg">
 </details>
 
 <details>
-<summary> <b>4.5.2</b> </summary>
-<img src="misc/arcitecture/4.5.2.jpg">
+<summary><b>4.5.1</b></summary>
+<img src="misc/architecture/4.5.1.jpg">
+</details>
+
+<details>
+<summary><b>4.5.2</b></summary>
+<img src="misc/architecture/4.5.2.jpg">
 </details>
 
 ## Timeline
@@ -167,7 +175,10 @@ cd goose-survivor
 ./gradlew test         # unit + integration tests (JUnit 5)
 ./gradlew checkstyle   # Google Java Style checks (checkstyleMain + checkstyleTest)
 ./gradlew build        # compile, test and checkstyle: what CI runs, must pass before merging
+./gradlew dist         # runnable JAR with all dependencies: build/libs/goose-survivor-<version>-all.jar
 ```
+
+**Releasing the JAR:** run `./gradlew dist`, then create a GitHub Release and attach `build/libs/goose-survivor-<version>-all.jar`. The **Executable JAR** link at the top of this README always points to the latest release. Run it with `java -jar goose-survivor-<version>-all.jar` (Java 17+).
 
 Checkstyle reports go to `goose-survivor/build/reports/checkstyle/` and test reports to `goose-survivor/build/reports/tests/test/index.html`.
 
@@ -206,6 +217,7 @@ Checkstyle reports go to `goose-survivor/build/reports/checkstyle/` and test rep
 │       └── test/java/...              Tests, mirroring the main package layout
 └── misc/
     ├── gameplay.png               Screenshot at the top of this README
+    ├── architecture/              Architecture diagrams shown in the Architecture section (PNG/JPG)
     ├── timelines/                 Gantt charts (PlantUML .puml source + rendered .svg) for each review date
     └── uml/                       PlantUML diagrams: entities, events, inventory, inventory_flow
 ```
