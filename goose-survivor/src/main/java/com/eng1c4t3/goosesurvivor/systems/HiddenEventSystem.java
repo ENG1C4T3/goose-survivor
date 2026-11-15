@@ -50,6 +50,9 @@ public class HiddenEventSystem extends EntitySystem {
   /** Permanent speed reward multiplier for completing the Long Boi event. */
   public static final float LONG_BOI_SPEED_REWARD = 1.1f;
 
+  /** Permanent extra maximum health for completing the Long Boi event. */
+  public static final float LONG_BOI_PATIENCE_REWARD = 25f;
+
   private final EntityListener bossRemovalListener = new EntityListener() {
     @Override
     public void entityAdded(Entity entity) {
@@ -235,12 +238,18 @@ public class HiddenEventSystem extends EntitySystem {
   }
 
   /**
-   * Applies the permanent speed reward to the current player.
+   * Blesses the current player with Long Boi's permanent rewards: more speed and more
+   * maximum health, healing them by the extra amount.
    */
-  private void grantSpeedReward() {
+  private void grantBlessing() {
     for (Entity player : players) {
       VelocityComponent velocity = VelocityComponent.MAPPER.get(player);
       velocity.maxSpeed *= LONG_BOI_SPEED_REWARD;
+      HealthComponent health = HealthComponent.MAPPER.get(player);
+      if (health != null) {
+        health.maxHealth += LONG_BOI_PATIENCE_REWARD;
+        health.heal(LONG_BOI_PATIENCE_REWARD);
+      }
     }
   }
 
@@ -267,7 +276,8 @@ public class HiddenEventSystem extends EntitySystem {
       event.eventBoss = null;
       statue.remove(InteractableComponent.class);
       stats.recordEventCompleted();
-      grantSpeedReward();
+      stats.recordHiddenEventFound();
+      grantBlessing();
     }
   }
 
@@ -298,6 +308,7 @@ public class HiddenEventSystem extends EntitySystem {
     student.remove(InteractableComponent.class);
     stats.recordEventTriggered();
     stats.recordEventCompleted();
+    stats.recordHiddenEventFound();
     return true;
   }
 
@@ -319,6 +330,7 @@ public class HiddenEventSystem extends EntitySystem {
     }
 
     final Entity spawned = spawnBelow(spawner, settings.drops.roll(random));
+    stats.recordInteraction();
 
     if (event.state == EventState.AVAILABLE) {
       event.state = EventState.ACTIVE;
@@ -396,6 +408,7 @@ public class HiddenEventSystem extends EntitySystem {
     fox.remove(InteractableComponent.class);
     stats.recordEventTriggered();
     stats.recordEventCompleted();
+    stats.recordHiddenEventFound();
     return spawnBelow(fox, SpawnDrop.item(ItemType.FOOD_SCATTER_LAUNCHER));
   }
 
@@ -415,6 +428,7 @@ public class HiddenEventSystem extends EntitySystem {
     event.state = EventState.COMPLETED;
     fountain.remove(InteractableComponent.class);
     stats.recordFountainVisited();
+    stats.recordInteraction();
     stats.recordEventTriggered();
     stats.recordEventCompleted();
     return true;

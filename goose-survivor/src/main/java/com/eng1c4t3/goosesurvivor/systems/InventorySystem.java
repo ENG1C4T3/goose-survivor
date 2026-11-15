@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.EntitySystem;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
+import com.eng1c4t3.goosesurvivor.SessionStats;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
 import com.eng1c4t3.goosesurvivor.components.UseItemEventComponent;
 import com.eng1c4t3.goosesurvivor.items.InventorySlot;
@@ -20,8 +21,25 @@ import com.eng1c4t3.goosesurvivor.items.InventorySlot;
  */
 public class InventorySystem extends EntitySystem {
 
+  private final SessionStats stats;
   private ImmutableArray<Entity> inventories;
   private ImmutableArray<Entity> events;
+
+  /**
+   * Constructs an InventorySystem that records nothing.
+   */
+  public InventorySystem() {
+    this(null);
+  }
+
+  /**
+   * Constructs an InventorySystem that records each item used.
+   *
+   * @param stats Where item uses are recorded, or null to record nothing.
+   */
+  public InventorySystem(SessionStats stats) {
+    this.stats = stats;
+  }
 
   /**
    * Caches the entities with inventories and the use item events.
@@ -78,6 +96,9 @@ public class InventorySystem extends EntitySystem {
 
     slot.item.effect.apply(user, getEngine());
     slot.consumeUse();
+    if (stats != null) {
+      stats.recordItemUsed();
+    }
     if (slot.isDepleted()) {
       inventory.clearSlot(slotIndex);
     }

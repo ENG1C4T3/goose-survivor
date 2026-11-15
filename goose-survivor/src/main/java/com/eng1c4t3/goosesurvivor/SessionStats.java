@@ -14,6 +14,8 @@ public class SessionStats {
   private int eventsTriggered;
   private int eventsCompleted;
   private int fountainsVisited;
+  private int hiddenEventsFound;
+  private int interactions;
   private final Map<EnemyType, Integer> enemiesKilled = new EnumMap<>(EnemyType.class);
 
   /**
@@ -137,5 +139,37 @@ public class SessionStats {
    */
   public int getFountainsVisited() {
     return fountainsVisited;
+  }
+
+  /**
+   * Records a hidden event found and completed, such as defeating Long Boi.
+   */
+  public void recordHiddenEventFound() {
+    hiddenEventsFound++;
+  }
+
+  /**
+   * Returns the number of hidden events found.
+   *
+   * @return the number of hidden events found.
+   */
+  public int getHiddenEventsFound() {
+    return hiddenEventsFound;
+  }
+
+  /**
+   * Records a successful interaction with an object on the map, such as picking up an item.
+   */
+  public void recordInteraction() {
+    interactions++;
+  }
+
+  /**
+   * Returns the number of successful interactions with objects on the map.
+   *
+   * @return the number of interactions.
+   */
+  public int getInteractions() {
+    return interactions;
   }
 }
