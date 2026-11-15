@@ -16,7 +16,6 @@ import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
 import com.eng1c4t3.goosesurvivor.components.UseItemEventComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
-
 import java.util.function.UnaryOperator;
 
 /**
@@ -76,12 +75,6 @@ public class InputSystem extends IteratingSystem {
   }
 
   /**
-   * Handles player input for the entity.
-   *
-   * @param entity The entity to process.
-   * @param deltaTime The time passed since the last frame.
-   */
-  /**
    * Sets how mouse positions are converted from screen to world coordinates, so the player's
    * aim follows the mouse. Without it the player has no aim.
    *
@@ -92,6 +85,12 @@ public class InputSystem extends IteratingSystem {
     this.screenToWorld = screenToWorld;
   }
 
+  /**
+   * Handles player input for the entity.
+   *
+   * @param entity The entity to process.
+   * @param deltaTime The time passed since the last frame.
+   */
   @Override
   protected void processEntity(Entity entity, float deltaTime) {
     handleAim(entity);
@@ -102,12 +101,6 @@ public class InputSystem extends IteratingSystem {
     handleItemKeys(entity);
   }
 
-  /**
-   * Creates a use item event for each hotbar key pressed this frame. Whether the item is
-   * actually used (it might be empty or cooling down) is decided by {@link InventorySystem}.
-   *
-   * @param player The player entity.
-   */
   /**
    * Stores where the mouse is pointing, in world coordinates, on the player.
    */
@@ -121,6 +114,13 @@ public class InputSystem extends IteratingSystem {
     playerComponent.hasAim = true;
   }
 
+
+  /**
+   * Creates a use item event for each hotbar key pressed this frame. Whether the item is
+   * actually used (it might be empty or cooling down) is decided by {@link InventorySystem}.
+   *
+   * @param player The player entity.
+   */
   private void handleItemKeys(Entity player) {
     InventoryComponent inventory = InventoryComponent.MAPPER.get(player);
     if (inventory == null) {

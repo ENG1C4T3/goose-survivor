@@ -62,19 +62,15 @@ class InteractPromptTest {
     assertNull(InputSystem.findNearestInteractable(new Entity(), List.of(chest)));
   }
 
-  @Test
-  void testPromptShowsKeyAndAction() {
-    assertEquals("[E] Open", InputSystem.interactPrompt(new InteractableComponent(10f, "Open")));
-  }
 
   @Test
   void testFactoryPrompts() {
     Entity pickup = EntityFactory.createItemPickup(ItemType.COFFEE, 0, 0, new TextureRegion());
-    Entity pack = EntityFactory.createHealthPack(0, 0, 25f, new TextureRegion());
+    Entity fountain = EntityFactory.createFountain(0, 0, new TextureRegion());
 
     assertEquals("[E] Pick up Coffee",
         InputSystem.interactPrompt(InteractableComponent.MAPPER.get(pickup)));
-    assertEquals("[E] Heal",
-        InputSystem.interactPrompt(InteractableComponent.MAPPER.get(pack)));
+    assertEquals("[E] Make a wish",
+        InputSystem.interactPrompt(InteractableComponent.MAPPER.get(fountain)));
   }
 }

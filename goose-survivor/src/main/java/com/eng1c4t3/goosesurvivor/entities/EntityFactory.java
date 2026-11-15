@@ -7,8 +7,8 @@ import com.eng1c4t3.goosesurvivor.TextureManager;
 import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
 import com.eng1c4t3.goosesurvivor.components.DecoyComponent;
 import com.eng1c4t3.goosesurvivor.components.DropOnDeathComponent;
-import com.eng1c4t3.goosesurvivor.components.FoxComponent;
 import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
+import com.eng1c4t3.goosesurvivor.components.FoxComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
@@ -38,10 +38,11 @@ public final class EntityFactory {
 
   /** How close, edge to edge, the player must be to pick up an item or health pack. */
   public static final float PICKUP_RANGE = 16f;
-
-  /** How close, edge to edge, the player must be to use an object or talk to someone. */
+  
   /** How close the player gets to the door before the gradient goose guarding it spawns. */
   public static final float DOOR_GUARD_RANGE = 150f;
+
+  /** How close, edge to edge, the player must be to use an object or talk to someone. */
   public static final float INTERACT_RANGE = 24f;
 
   /** Width and height of a projectile. */

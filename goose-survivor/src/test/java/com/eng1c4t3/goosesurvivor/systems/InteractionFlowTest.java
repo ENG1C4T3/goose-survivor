@@ -11,8 +11,6 @@ import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.utils.ImmutableArray;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
-import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
 import com.eng1c4t3.goosesurvivor.components.ItemPickupComponent;
@@ -153,72 +151,49 @@ class InteractionFlowTest {
     assertSame(nearer, handled.get(0).targetInteractable);
   }
 
-  private Entity addHealthPack(float x, float y, float amount, boolean singleUse) {
-    Entity pack = new Entity();
-    pack.add(new TransformComponent(x, y, 32f, 32f));
-    pack.add(new InteractableComponent(50f, "Press E to heal", singleUse));
-    pack.add(new HealOnInteractComponent(amount));
-    engine.addEntity(pack);
-    return pack;
-  }
-
-  private HealthComponent giveHealth(Entity player, float health, float maxHealth) {
-    HealthComponent hp = new HealthComponent(maxHealth);
-    hp.health = health;
-    player.add(hp);
-    return hp;
-  }
-
   @Test
-  void testHealthPackHealsPlayerAndIsRemoved() {
-    Entity player = addPlayer(0, 0);
-    HealthComponent hp = giveHealth(player, 50f, 100f);
-    final Entity pack = addHealthPack(40, 0, 25f, true);
-    justPressedKeys.add(InputSystem.INTERACT_KEY);
-
-    engine.update(0.016f);
-
-    assertEquals(75f, hp.health, 1e-5f);
-    assertFalse(engine.getEntities().contains(pack, true));
-  }
-
-  @Test
-  void testHealIsCappedAtMaxHealth() {
-    Entity player = addPlayer(0, 0);
-    final HealthComponent hp = giveHealth(player, 90f, 100f);
-    addHealthPack(40, 0, 25f, true);
-    justPressedKeys.add(InputSystem.INTERACT_KEY);
-
-    engine.update(0.016f);
-
-    assertEquals(100f, hp.health, 1e-5f);
-  }
-
-  @Test
-  void testReusableInteractableIsNotRemoved() {
-    Entity player = addPlayer(0, 0);
-    final HealthComponent hp = giveHealth(player, 10f, 100f);
-    final Entity fountain = addHealthPack(40, 0, 25f, false);
-    justPressedKeys.add(InputSystem.INTERACT_KEY);
-
-    engine.update(0.016f);
-    engine.update(0.016f);
-
-    assertEquals(60f, hp.health, 1e-5f);
-    assertTrue(engine.getEntities().contains(fountain, true));
-  }
-
-  @Test
-  void testSingleUseInteractableOnlyUsedOncePerFrame() {
-    final HealthComponent hpA = giveHealth(addPlayer(0, 0), 50f, 100f);
-    final HealthComponent hpB = giveHealth(addPlayer(10, 0), 50f, 100f);
-    addHealthPack(40, 0, 25f, true);
+  void testSingleUseInteractableIsRemoved() {
+    addPlayer(0, 0);
+    final Entity target = addInteractable(40, 0, 50f);
+    target.add(new InteractableComponent(50f, "Use", true));
     justPressedKeys.add(InputSystem.INTERACT_KEY);
 
     engine.update(0.016f);
 
     assertEquals(1, handled.size());
-    assertEquals(125f, hpA.health + hpB.health, 1e-5f);
+    assertSame(target, handled.get(0).targetInteractable);
+    assertFalse(engine.getEntities().contains(target, true));
+  }
+
+  @Test
+  void testReusableInteractableIsNotRemoved() {
+    addPlayer(0, 0);
+    final Entity target = addInteractable(40, 0, 50f);
+    target.add(new InteractableComponent(50f, "Use", false));
+    justPressedKeys.add(InputSystem.INTERACT_KEY);
+
+    engine.update(0.016f);
+    engine.update(0.016f);
+
+    assertEquals(2, handled.size());
+    assertSame(target, handled.get(0).targetInteractable);
+    assertSame(target, handled.get(1).targetInteractable);
+    assertTrue(engine.getEntities().contains(target, true));
+  }
+
+  @Test
+  void testSingleUseInteractableOnlyUsedOncePerFrame() {
+    addPlayer(0, 0);
+    addPlayer(10, 0);
+    final Entity target = addInteractable(40, 0, 50f);
+    target.add(new InteractableComponent(50f, "Use", true));
+    justPressedKeys.add(InputSystem.INTERACT_KEY);
+
+    engine.update(0.016f);
+
+    assertEquals(1, handled.size());
+    assertFalse(engine.getEntities().contains(target, true));
+    assertEquals(0, events.size());
   }
 
   private Entity addItemPickup(float x, float y, ItemType item) {

@@ -18,7 +18,8 @@ public record TextureManager(AssetManager assetManager) implements Disposable {
   public static final String COFFEE_TEXTURE = "coffee.png";
   public static final String ENERGY_DRINK_TEXTURE = "energy_drink.png";
   public static final String COFFEE_VENDING_MACHINE_TEXTURE = "coffee_vending_machine_full.png";
-  public static final String COFFEE_VENDING_MACHINE_EMPTY_TEXTURE = "coffee_vending_machine_empty.png";
+  public static final String COFFEE_VENDING_MACHINE_EMPTY_TEXTURE =
+      "coffee_vending_machine_empty.png";
   public static final String POPCORN_TEXTURE = "popcorn.png";
   public static final String ITEM_VENDING_MACHINE_TEXTURE = "item_vending_machine_full.png";
   public static final String ITEM_VENDING_MACHINE_EMPTY_TEXTURE = "item_vending_machine_empty.png";

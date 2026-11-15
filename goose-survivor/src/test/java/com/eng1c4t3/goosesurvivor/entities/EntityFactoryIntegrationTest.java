@@ -1,17 +1,16 @@
 package com.eng1c4t3.goosesurvivor.entities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
 import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
-import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
+import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
@@ -36,8 +35,8 @@ class EntityFactoryIntegrationTest {
     assertNotNull(VelocityComponent.MAPPER.get(player));
     assertEquals(25f, transform.position.x, 0.001f);
     assertEquals(35f, transform.position.y, 0.001f);
-    assertEquals(32f, transform.position.width, 0.001f);
-    assertEquals(32f, transform.position.height, 0.001f);
+    assertEquals(36f, transform.position.width, 0.001f);
+    assertEquals(62f, transform.position.height, 0.001f);
     assertEquals(100f, health.health, 0.001f);
     assertEquals(EntityFactory.PLAYER_DAMAGE_COOLDOWN, health.damageCooldown, 0.001f);
   }
@@ -56,8 +55,8 @@ class EntityFactoryIntegrationTest {
       assertNotNull(CollisionComponent.MAPPER.get(enemy));
       assertEquals(40f, transform.position.x, 0.001f);
       assertEquals(60f, transform.position.y, 0.001f);
-      assertEquals(stats.size(), transform.position.width, 0.001f);
-      assertEquals(stats.size(), transform.position.height, 0.001f);
+      assertEquals(stats.width(), transform.position.width, 0.001f);
+      assertEquals(stats.height(), transform.position.height, 0.001f);
       assertEquals(stats.health(), HealthComponent.MAPPER.get(enemy).health, 0.001f);
       assertEquals(stats.speed(), VelocityComponent.MAPPER.get(enemy).maxSpeed, 0.001f);
     }
@@ -78,15 +77,18 @@ class EntityFactoryIntegrationTest {
   }
 
   @Test
-  void healthPackRetainsHealingAndSingleUseInteraction() {
+  void fountainHasVisitEventAndRemainsInWorld() {
     final TextureRegion region = new TextureRegion();
-    final Entity pack = EntityFactory.createHealthPack(30f, 40f, 25f, region);
-    final InteractableComponent interaction = InteractableComponent.MAPPER.get(pack);
+    final Entity fountain = EntityFactory.createFountain(30f, 40f, region);
+    final InteractableComponent interaction = InteractableComponent.MAPPER.get(fountain);
+    final HiddenEventComponent event = HiddenEventComponent.MAPPER.get(fountain);
 
-    assertSame(region, TextureComponent.MAPPER.get(pack).region);
-    assertEquals(25f, HealOnInteractComponent.MAPPER.get(pack).amount, 0.001f);
-    assertEquals(48f, interaction.range, 0.001f);
-    assertTrue(interaction.singleUse);
-    assertNull(CollisionComponent.MAPPER.get(pack));
+    assertSame(region, TextureComponent.MAPPER.get(fountain).region);
+    assertNotNull(event);
+    assertEquals(HiddenEventComponent.EventType.FOUNTAIN, event.type);
+    assertEquals(EntityFactory.INTERACT_RANGE, interaction.range, 0.001f);
+    assertEquals("Make a wish", interaction.promptText);
+    assertFalse(interaction.singleUse);
+    assertNotNull(CollisionComponent.MAPPER.get(fountain));
   }
 }
