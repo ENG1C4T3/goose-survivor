@@ -12,7 +12,7 @@ A 2D survival game built with [libGDX](https://libgdx.com/) using the [Ashley](h
 | 1-9 | Use the item in that hotbar slot |
 | P | Pause / resume |
 
-## Arcitecture
+## Architecture
 
 <details>
 <summary> <b>1.1</b> </summary>
