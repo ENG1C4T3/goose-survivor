@@ -3,8 +3,6 @@ package com.eng1c4t3.goosesurvivor.systems;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
-import com.eng1c4t3.goosesurvivor.components.HealOnInteractComponent;
-import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
@@ -62,7 +60,7 @@ public class InteractionSystem extends IteratingSystem {
   }
 
   /**
-   * Applies every interaction effect on the target to the player, then removes
+   * Gives the player the target's item, if it is a pickup, then removes
    * the target if
    * it is single use.
    *
@@ -81,12 +79,6 @@ public class InteractionSystem extends IteratingSystem {
       if (inventory == null || inventory.addItem(pickup.item) < 0) {
         return;
       }
-    }
-
-    HealOnInteractComponent heal = HealOnInteractComponent.MAPPER.get(target);
-    HealthComponent playerHealth = HealthComponent.MAPPER.get(player);
-    if (heal != null && playerHealth != null) {
-      playerHealth.heal(heal.amount);
     }
 
     if (InteractableComponent.MAPPER.get(target).singleUse) {

@@ -11,7 +11,7 @@ import com.eng1c4t3.goosesurvivor.systems.InteractionSystem;
  * <p>When the player presses the interact key while within {@link #range} of this entity,
  * the {@link InputSystem} creates a trigger event entity which the {@link InteractionSystem}
  * then processes. What the interaction does is decided by the effect components on the entity
- * (e.g. {@link HealOnInteractComponent}).
+ * (e.g. {@link ItemPickupComponent}).
  *
  * @see TriggerEventComponent
  */
@@ -19,7 +19,7 @@ public class InteractableComponent implements Component {
   public static final ComponentMapper<InteractableComponent> MAPPER =
       ComponentMapper.getFor(InteractableComponent.class);
 
-  /** Maximum distance between the player's centre and this entity's centre to interact. */
+  /** Maximum gap between the player's edge and this entity's edge to interact. */
   public float range;
   /** Action shown to the player when they are in range, e.g. "Open"; the HUD adds the key. */
   public String promptText;

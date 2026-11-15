@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.eng1c4t3.goosesurvivor.components.CollisionComponent;
+import com.eng1c4t3.goosesurvivor.components.DecoyComponent;
 import com.eng1c4t3.goosesurvivor.components.EnemyComponent;
 import com.eng1c4t3.goosesurvivor.components.HealthComponent;
 import com.eng1c4t3.goosesurvivor.components.PlayerComponent;
@@ -105,7 +106,7 @@ public class CollisionSystem extends EntitySystem {
 
         if (rectA.overlaps(rectB)) {
           if (!moverIsProjectile) {
-            if (EnemyComponent.MAPPER.has(mover) && PlayerComponent.MAPPER.has(other)) {
+            if (EnemyComponent.MAPPER.has(mover) && isEnemyTarget(other)) {
               handleEnemyPlayerContact(mover, other);
             } else if (otherCollision.type == CollisionComponent.Type.SOLID) {
               resolveSolidCollision(transform, velocity, otherTransform);
@@ -152,10 +153,19 @@ public class CollisionSystem extends EntitySystem {
   }
 
   /**
-   * Handles an enemy touching the player: the player takes the enemy's contact damage and the
-   * enemy is knocked back in the direction opposite to its current velocity.
+   * Returns whether enemies deal contact damage to an entity: the player or a decoy.
    *
-   * <p>Damage is only dealt once per knockback, so an enemy can't hit the player every frame
+   * @param entity The entity to check.
+   * @return {@code true} if enemies attack the entity on contact.
+   */
+  private static boolean isEnemyTarget(Entity entity) {
+    return PlayerComponent.MAPPER.has(entity) || DecoyComponent.MAPPER.has(entity);
+  }
+
+  /**
+   * Handles an enemy touching the player or a decoy: the target takes contact damage.
+   * The enemy is knocked back in the direction opposite to its current velocity.
+   * Damage is only dealt once per knockback, so an enemy can't hit the player every frame
    * while the two still overlap.
    *
    * @param enemy The enemy entity.

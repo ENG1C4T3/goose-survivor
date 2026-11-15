@@ -17,7 +17,15 @@ public class HiddenEventComponent implements Component {
    */
   public enum EventType {
     LONG_BOI_STATUE,
-    MUSIC_STUDENT
+    MUSIC_STUDENT,
+    /** Spawns a random item or enemy from a {@link SpawnerComponent} when used. */
+    SPAWNER,
+    /** A fox that runs away until petted, then follows the player and drops a launcher. */
+    FOX,
+    /** A fountain that only records a visit in the session stats. */
+    FOUNTAIN,
+    /** A locked door that opens, using up a key, when the player has one. */
+    DOOR,
   }
 
   /**

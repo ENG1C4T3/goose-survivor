@@ -14,7 +14,8 @@ class EntityFactoryTest {
     for (EnemyType type : EnemyType.values()) {
       EnemyStats stats = EntityFactory.statsFor(type);
       assertNotNull(stats, type.name());
-      assertTrue(stats.size() > 0, type.name());
+      assertTrue(stats.width() > 0, type.name());
+      assertTrue(stats.height() > 0, type.name());
       assertTrue(stats.health() > 0, type.name());
       assertTrue(stats.speed() > 0, type.name());
       assertTrue(stats.damage() > 0, type.name());

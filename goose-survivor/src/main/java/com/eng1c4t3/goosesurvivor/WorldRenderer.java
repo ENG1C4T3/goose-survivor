@@ -3,6 +3,7 @@ package com.eng1c4t3.goosesurvivor;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 
@@ -12,6 +13,9 @@ import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 public class WorldRenderer {
   private final SpriteBatch batch;
   private final OrthographicCamera camera;
+  private TextureRegion background = null;
+  private float backgroundWidth;
+  private float backgroundHeight;
 
   /**
    * Creates a renderer using supplied batch and camera.
@@ -33,7 +37,20 @@ public class WorldRenderer {
   }
 
   /**
-   * Draws entities have both position and texture.
+   * Sets an image drawn behind every entity, stretched from (0, 0) to the given size.
+   *
+   * @param region The background image, or null for none.
+   * @param width  The width to draw it at, normally the world width.
+   * @param height The height to draw it at, normally the world height.
+   */
+  public void setBackground(TextureRegion region, float width, float height) {
+    this.background = region;
+    this.backgroundWidth = width;
+    this.backgroundHeight = height;
+  }
+
+  /**
+   * Draws the background, then every entity that has both position and texture.
    *
    * @param world the world to draw
    *
@@ -48,6 +65,10 @@ public class WorldRenderer {
 
     batch.setProjectionMatrix(camera.combined);
     batch.begin();
+
+    if (background != null) {
+      batch.draw(background, 0f, 0f, backgroundWidth, backgroundHeight);
+    }
 
     for (Entity entity : world.getEntities()) {
       TransformComponent transform = TransformComponent.MAPPER.get(entity);
