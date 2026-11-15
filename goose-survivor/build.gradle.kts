@@ -80,3 +80,24 @@ tasks.withType<Checkstyle>().configureEach {
 tasks.named<JavaExec>("run") {
     workingDir = file("assets")
 }
+
+// Builds a single runnable jar containing the game, all dependencies and assets.
+tasks.register<Jar>("fatJar") {
+    group = "build"
+    description = "Assembles a runnable jar with all dependencies and assets."
+    archiveClassifier.set("all")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+            "Main-Class" to application.mainClass.get(),
+            "Enable-Native-Access" to "ALL-UNNAMED",
+        )
+    }
+    from(sourceSets.main.get().output)
+    dependsOn(configurations.runtimeClasspath)
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    }) {
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA", "META-INF/INDEX.LIST")
+    }
+}
