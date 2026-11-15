@@ -23,8 +23,8 @@ import com.eng1c4t3.goosesurvivor.components.TextureComponent;
 import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
 import com.eng1c4t3.goosesurvivor.components.VelocityComponent;
-import com.eng1c4t3.goosesurvivor.items.InventorySlot;
 import com.eng1c4t3.goosesurvivor.entities.SpawnDrop;
+import com.eng1c4t3.goosesurvivor.items.InventorySlot;
 import com.eng1c4t3.goosesurvivor.items.ItemType;
 import java.util.Objects;
 import java.util.Random;
@@ -42,7 +42,7 @@ public class HiddenEventSystem extends EntitySystem {
   private ImmutableArray<Entity> approachSpawners;
   private Function<String, TextureRegion> textures = fileName -> null;
   private Random random = new Random();
-  private Runnable onDoorOpened = () -> { };
+  private Runnable onDoorOpened = () -> {};
 
   /** Vertical gap between a spawner and the entity it spawns. */
   public static final float SPAWN_GAP = 4f;
@@ -318,7 +318,7 @@ public class HiddenEventSystem extends EntitySystem {
       return null;
     }
 
-    Entity spawned = spawnBelow(spawner, settings.drops.roll(random));
+    final Entity spawned = spawnBelow(spawner, settings.drops.roll(random));
 
     if (event.state == EventState.AVAILABLE) {
       event.state = EventState.ACTIVE;

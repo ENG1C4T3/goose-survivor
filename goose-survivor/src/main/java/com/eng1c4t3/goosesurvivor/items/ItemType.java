@@ -35,7 +35,7 @@ public enum ItemType {
           TextureManager.NUT_PROJECTILE_TEXTURE)),
   /** Opens a locked door; using it from the hotbar does nothing. Dropped by the gradient goose. */
   KEY("Key", "Key", ItemType.UNLIMITED_USES, 0.1f,
-      TextureManager.KEY_TEXTURE, 27, 23, (user, engine) -> { });
+      TextureManager.KEY_TEXTURE, 27, 23, (user, engine) -> {});
 
   /** Value of {@link #maxUses} for an item that can be used forever. */
   public static final int UNLIMITED_USES = -1;

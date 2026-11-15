@@ -163,10 +163,9 @@ public class CollisionSystem extends EntitySystem {
   }
 
   /**
-   * Handles an enemy touching the player or a decoy: the target takes the enemy's contact damage and the
-   * enemy is knocked back in the direction opposite to its current velocity.
-   *
-   * <p>Damage is only dealt once per knockback, so an enemy can't hit the player every frame
+   * Handles an enemy touching the player or a decoy: the target takes contact damage.
+   * The enemy is knocked back in the direction opposite to its current velocity.
+   * Damage is only dealt once per knockback, so an enemy can't hit the player every frame
    * while the two still overlap.
    *
    * @param enemy The enemy entity.
