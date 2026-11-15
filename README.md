@@ -90,8 +90,14 @@ Speed is split in `VelocityComponent`: `maxSpeed` is the permanent base speed (c
   <img src="misc/timelines/21_10_26_timeline.svg" width="100%">
 </details>
 
-<details open>
+<details>
   <summary><b>28-10-2026</b></summary>
   <br>
   <img src="misc/timelines/28_10_26_timeline.svg" width="100%">
+</details>
+
+<details open>
+  <summary><b>11-11-2026</b></summary>
+  <br>
+  <img src="misc/timelines/11_11_26_timeline.svg" width="100%">
 </details>
