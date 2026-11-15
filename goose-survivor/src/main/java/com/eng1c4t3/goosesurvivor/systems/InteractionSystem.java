@@ -3,6 +3,7 @@ package com.eng1c4t3.goosesurvivor.systems;
 import com.badlogic.ashley.core.Entity;
 import com.badlogic.ashley.core.Family;
 import com.badlogic.ashley.systems.IteratingSystem;
+import com.eng1c4t3.goosesurvivor.SessionStats;
 import com.eng1c4t3.goosesurvivor.components.HiddenEventComponent;
 import com.eng1c4t3.goosesurvivor.components.InteractableComponent;
 import com.eng1c4t3.goosesurvivor.components.InventoryComponent;
@@ -19,11 +20,24 @@ import com.eng1c4t3.goosesurvivor.components.TriggerEventComponent;
  */
 public class InteractionSystem extends IteratingSystem {
 
+  private final SessionStats stats;
+
   /**
-   * Constructs an InteractionSystem that processes trigger event entities.
+   * Constructs an InteractionSystem that processes trigger event entities and records
+   * nothing.
    */
   public InteractionSystem() {
+    this(null);
+  }
+
+  /**
+   * Constructs an InteractionSystem that records successful interactions.
+   *
+   * @param stats Where interactions are recorded, or null to record nothing.
+   */
+  public InteractionSystem(SessionStats stats) {
     super(Family.all(TriggerEventComponent.class).get());
+    this.stats = stats;
   }
 
   /**
@@ -81,6 +95,9 @@ public class InteractionSystem extends IteratingSystem {
       }
     }
 
+    if (stats != null) {
+      stats.recordInteraction();
+    }
     if (InteractableComponent.MAPPER.get(target).singleUse) {
       getEngine().removeEntity(target);
     }

@@ -106,6 +106,7 @@ public class InventoryHud implements Disposable {
       drawHealth(player);
     }
     drawTimer(session.getRemainingTime());
+    drawScore(session.getScore().total());
     if (inventory != null) {
       drawSlotText(inventory);
     }
@@ -240,6 +241,16 @@ public class InventoryHud implements Disposable {
   public static String formatCountdown(float remainingSeconds) {
     int whole = (int) Math.ceil(Math.max(0f, remainingSeconds));
     return String.format("%d:%02d", whole / 60, whole % 60);
+  }
+
+  /**
+   * Draws the current score at the top right of the screen.
+   */
+  private void drawScore(int score) {
+    String text = "Score " + score;
+    font.setColor(Color.WHITE);
+    layout.setText(font, text);
+    font.draw(batch, text, worldWidth - layout.width - 10, worldHeight - 10);
   }
 
   private void drawHealth(Entity player) {

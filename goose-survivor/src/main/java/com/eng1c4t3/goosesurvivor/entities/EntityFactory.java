@@ -59,6 +59,9 @@ public final class EntityFactory {
   /** Damage dealt by Long Boi's projectiles. */
   public static final float LONG_BOI_PROJECTILE_DAMAGE = 15f;
 
+  /** EXP (score) for defeating a basic goose; fast geese give 2x and tank geese 4x. */
+  public static final int BASIC_GOOSE_EXP = 10;
+
   /**
    * The kinds of enemy that can be created.
    */
@@ -99,16 +102,20 @@ public final class EntityFactory {
   public static EnemyStats statsFor(EnemyType type) {
     return switch (type) {
       case GOOSE ->
-          new EnemyStats(41f, 39f, 100f, 70f, 10f, 80f, TextureManager.GOOSE_TEXTURE, 10);
+          new EnemyStats(41f, 39f, 100f, 70f, 10f, 80f, TextureManager.GOOSE_TEXTURE,
+              BASIC_GOOSE_EXP);
       case FAST_GOOSE ->
-          new EnemyStats(59f, 49f, 100f, 100f, 5f, 60f, TextureManager.FAST_GOOSE_TEXTURE, 15);
+          new EnemyStats(59f, 49f, 100f, 100f, 5f, 60f, TextureManager.FAST_GOOSE_TEXTURE,
+              BASIC_GOOSE_EXP * 2);
       case TANK_GOOSE ->
-          new EnemyStats(45f, 61f, 300f, 40f, 15f, 40f, TextureManager.TANK_GOOSE_TEXTURE, 30);
+          new EnemyStats(45f, 61f, 300f, 40f, 15f, 40f, TextureManager.TANK_GOOSE_TEXTURE,
+              BASIC_GOOSE_EXP * 4);
       case GRADIENT_GOOSE ->
           new EnemyStats(99f, 110f, 150f, 80f, 10f, 80f,
               TextureManager.GRADIENT_GOOSE_TEXTURE, 20);
       case LONG_BOI ->
-          new EnemyStats(38f, 72f, 500f, 100f, 20f, 100f, TextureManager.LONG_BOI_TEXTURE, 100);
+          new EnemyStats(38f, 72f, 500f, 110f, 20f, 100f, TextureManager.LONG_BOI_TEXTURE,
+              BASIC_GOOSE_EXP * 20);
     };
   }
 
@@ -253,7 +260,7 @@ public final class EntityFactory {
     statue.add(new TransformComponent(x, y, 36f, 69f));
     statue.add(new TextureComponent(region));
     statue.add(new CollisionComponent(CollisionComponent.Type.SOLID));
-    statue.add(new InteractableComponent(INTERACT_RANGE, "Awaken Long Boi", false));
+    statue.add(new InteractableComponent(INTERACT_RANGE, "Break Long Boi statue", false));
     statue.add(new HiddenEventComponent(
         HiddenEventComponent.EventType.LONG_BOI_STATUE));
     return statue;

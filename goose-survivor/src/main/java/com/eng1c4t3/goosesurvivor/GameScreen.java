@@ -90,6 +90,8 @@ public class GameScreen extends ScreenAdapter {
 
     session.configureMouseAim(viewport::unproject);
 
+    session.configureEnemySpawning(textureManager::getTextureRegion);
+
     session.configureHiddenEvents(
         textureManager.getTextureRegion(TextureManager.LONG_BOI_TEXTURE),
         textureManager::getTextureRegion);
@@ -138,8 +140,6 @@ public class GameScreen extends ScreenAdapter {
         textureManager.getTextureRegion(TextureManager.ITEM_VENDING_MACHINE_TEXTURE),
         textureManager.getTextureRegion(TextureManager.ITEM_VENDING_MACHINE_EMPTY_TEXTURE)));
 
-    addEnemy(EntityFactory.EnemyType.FAST_GOOSE, 1120f, 525f);
-    addEnemy(EntityFactory.EnemyType.TANK_GOOSE, 1120f, 150f);
 
     world.addEntity(EntityFactory.createFox(960f, 600f,
         textureManager.getTextureRegion(TextureManager.FOX_TEXTURE)));
@@ -269,6 +269,15 @@ public class GameScreen extends ScreenAdapter {
       menu.addFooterLine("The geese got you.");
     }
     menu.addFooterLine("Time played: " + formatTime(session.getElapsedTime()));
+    Score score = session.getScore();
+    if (won) {
+      menu.addFooterLine("Win: " + score.win() + "     Time bonus: " + score.timeBonus());
+    }
+    menu.addFooterLine("Hidden events: " + score.hiddenEvents()
+        + "     Geese pacified: " + score.geese());
+    menu.addFooterLine("Interactions: " + score.interactions()
+        + "     Items used: " + score.itemsUsed());
+    menu.addFooterLine("SCORE: " + score.total());
     return menu;
   }
 

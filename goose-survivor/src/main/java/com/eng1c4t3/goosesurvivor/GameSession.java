@@ -13,6 +13,7 @@ import com.eng1c4t3.goosesurvivor.components.TransformComponent;
 import com.eng1c4t3.goosesurvivor.entities.EntityFactory;
 import com.eng1c4t3.goosesurvivor.systems.CollisionSystem;
 import com.eng1c4t3.goosesurvivor.systems.DecoySystem;
+import com.eng1c4t3.goosesurvivor.systems.EnemySpawnSystem;
 import com.eng1c4t3.goosesurvivor.systems.EnemySystem;
 import com.eng1c4t3.goosesurvivor.systems.EventCleanupSystem;
 import com.eng1c4t3.goosesurvivor.systems.FoxSystem;
@@ -50,10 +51,10 @@ public class GameSession {
     InputSystem inputSystem = new InputSystem();
     inputSystem.priority = 0;
 
-    InteractionSystem interactionSystem = new InteractionSystem();
+    InteractionSystem interactionSystem = new InteractionSystem(stats);
     interactionSystem.priority = 1;
 
-    InventorySystem inventorySystem = new InventorySystem();
+    InventorySystem inventorySystem = new InventorySystem(stats);
     inventorySystem.priority = 2;
 
     SpeedBoostSystem speedBoostSystem = new SpeedBoostSystem();
@@ -171,6 +172,22 @@ public class GameSession {
   }
 
   /**
+   * Enables timed goose spawning at the world's edges (see {@link EnemySpawnSystem}).
+   *
+   * @param textures Returns the texture region for a texture file name.
+   * @throws IllegalStateException if enemy spawning has already been configured.
+   */
+  public void configureEnemySpawning(Function<String, TextureRegion> textures) {
+    if (engine.getSystem(EnemySpawnSystem.class) != null) {
+      throw new IllegalStateException("Enemy spawning has already been configured");
+    }
+    EnemySpawnSystem spawnSystem = new EnemySpawnSystem(
+        GameScreen.WORLD_WIDTH, GameScreen.WORLD_HEIGHT, textures);
+    spawnSystem.priority = 3;
+    engine.addSystem(spawnSystem);
+  }
+
+  /**
    * Makes the player's aim follow the mouse.
    *
    * @param screenToWorld Converts a screen position to world coordinates in place, e.g.
@@ -200,6 +217,16 @@ public class GameSession {
    */
   public SessionStats getStats() {
     return stats;
+  }
+
+  /**
+   * Returns this playthrough's score so far. The win and time bonuses only count once the
+   * session has been won.
+   *
+   * @return The current score.
+   */
+  public Score getScore() {
+    return Score.of(stats, gameState == SessionState.WON, getRemainingTime());
   }
 
   public SessionState getState() {
