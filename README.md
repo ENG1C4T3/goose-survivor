@@ -7,7 +7,12 @@ A 2D survival game built with [libGDX](https://libgdx.com/) using the [Ashley](h
 
 | | |
 | --- | --- |
-| **Executable JAR** | [Download the latest release](https://github.com/ENG1C4T3/goose-survivor/releases/latest) |
+| **Requirements** | [Req1.pdf](misc/docs/Req1.pdf) |
+| **Architecture** | [Arch1.pdf](misc/docs/Arch1.pdf) |
+| **Method selection and planning** | [Plan1.pdf](misc/docs/Plan1.pdf) |
+| **Risk assessment and mitigation** | [Risk1.pdf](misc/docs/Risk1.pdf) |
+| **Implementation** | [Impl1.pdf](misc/docs/Impl1.pdf) |
+| **Executable JAR** | [Download the latest release](https://github.com/ENG1C4T3/goose-survivor/releases/latest) (requires Java 17+) |
 | **GitHub repository** | [github.com/ENG1C4T3/goose-survivor](https://github.com/ENG1C4T3/goose-survivor) |
 
 ## Controls
